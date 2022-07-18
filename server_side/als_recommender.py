@@ -22,5 +22,21 @@ user_listens = spark_session.read.csv('./data/lastfm_user_scrobbles.csv', inferS
 artists.printSchema()
 user_listens.printSchema()
 
+training_df, test_df = user_listens.randomSplit([.8, .2])
+
+# parameters for the model
+iterations = 12
+regularisation = 0.1
+rank = 8
+errors = []
+err = 0
+
+als_model = ALS(maxIter = iterations, rank = rank, regParam = regularisation,
+userCol='user_id', itemCol='artist_id', ratingCol='scrobbles', coldStartStrategy="drop")
+
+# training it
+model = als_model.fit(training_df)
+model.recommendForAllUsers(5)
+
 if __name__=="__main__":
     print("run")

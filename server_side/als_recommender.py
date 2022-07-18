@@ -17,6 +17,7 @@ class Recommender:
         self.sp_con = self.spark_session.sparkContext
         self._load_data()
         self._make_model()
+        self._map_artist_id()
 
     def _load_data(self):
         self.artists = self.spark_session.read.csv('./data/lastfm_artist_list.csv', inferSchema=True, header=True)
@@ -37,9 +38,29 @@ class Recommender:
 
         self.model = self.als_model.fit(self.training_df)
 
+    def _map_artist_id(self):
+        artist_df = pd.read_csv('./data/lastfm_artist_list.csv')
+        self.artist_id_dict = {}
+        # in df it's artist_id and artist_name
+        for i in range(1, len(artist_df.index) + 1):
+            self.artist_id_dict[i] = str(artist_df.loc[artist_df['artist_id'] == i]['artist_name'].values[0])
+        return self.artist_id_dict
+
     def recommend_all(self, n_artists = 5):
-        self.model.recommendForAllUsers(n_artists)
+        return self.model.recommendForAllUsers(n_artists)
+
+    def match_artist(self, artist):
+        artist_match = {}
+        for i, v in self.artist_id_dict.items():
+        # key = artist name
+        # value = [match ratio, artist id]
+            artist_match[v] = [fuzz.ratio(artist.lower(), v.lower()), i]
+        artist_match = sorted(artist_match.items(), key=lambda item: item[1], reverse = True)
+        # returning best match, could later do some more to evaluate based on match level
+        # match returned format will be ("Artist Name", [confidence/match ratio, artist_id])
+        return artist_match[0]
 
 if __name__=="__main__":
     recommender = Recommender()
-    recommender.recommend_all()
+    print(recommender.recommend_all())
+    print(recommender.match_artist("qtipp"))

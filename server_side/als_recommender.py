@@ -60,7 +60,17 @@ class Recommender:
         # match returned format will be ("Artist Name", [confidence/match ratio, artist_id])
         return artist_match[0]
 
+    def recommend_subset(self, subset, n_artists):
+        recommends = self.model.recommendForUserSubset(subset, n_artists)
+        return recommends
+
+    def single_user_subset(self, user_id):
+        subset = self.user_listens.filter(self.user_listens.user_id == user_id)
+        # subset.select("user_id").limit(1).show()
+        return subset
+
 if __name__=="__main__":
     recommender = Recommender()
     print(recommender.recommend_all())
     print(recommender.match_artist("qtipp"))
+    recommender.recommend_subset(recommender.single_user_subset(3), 10).show()

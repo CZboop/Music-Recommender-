@@ -7,9 +7,18 @@ conn = psycopg2.connect(host="localhost", database="recommend",
 
 cur = conn.cursor()
 
+cur.execute('CREATE TABLE IF NOT EXISTS users (id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT);')
+cur.execute('CREATE TABLE IF NOT EXISTS artists (id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT NOT NULL);')
+cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id), artist_id INTEGER NOT NULL REFERENCES artists(id), rating INTEGER);')
+
 # TODO:
 # add existing data to db if first time running
-# create user db
 # add user creation method api and database
 # add new users + ratings from api
 # retrieve all data to then put into spark df
+# artist creation method
+
+conn.commit()
+
+cur.close()
+conn.close()

@@ -7,9 +7,9 @@ conn = psycopg2.connect(host="localhost", database="recommend",
 
 cur = conn.cursor()
 
-cur.execute('CREATE TABLE IF NOT EXISTS users (id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT);')
-cur.execute('CREATE TABLE IF NOT EXISTS artists (id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT NOT NULL);')
-cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id), artist_id INTEGER NOT NULL REFERENCES artists(id), rating INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS users (auto_id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT, id INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS artists (auto_id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT NOT NULL, id INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (auto_id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id), artist_id INTEGER NOT NULL REFERENCES artists(id), rating INTEGER);')
 
 # TODO:
 # add existing data to db if first time running

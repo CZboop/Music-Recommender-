@@ -33,14 +33,15 @@ class CSVToSQL:
     def create_sql_users(self):
         insert_statement = ""
         for c,v in enumerate(set(list(self.listen_data['user_id']))):
-            sql_string = f"INSERT INTO users (name, id) VALUES (user{c+1}, {v});\n"
+            sql_string = f"INSERT INTO users (name, id) VALUES ('user{c+1}', {v});\n"
             insert_statement += sql_string
         return insert_statement
 
     def create_sql_artists(self):
         insert_statement = ""
         for c,v in enumerate(set(list(self.artist_data['artist_id']))):
-            sql_string = f"INSERT INTO artists (name, id) VALUES ({self.artist_data.loc[self.artist_data['artist_id'] == v]['artist_name'].values[0]}, {v});\n"
+            artist_name = self.artist_data.loc[self.artist_data['artist_id'] == v]['artist_name'].values[0].replace("'", "''")
+            sql_string = f"INSERT INTO artists (name, id) VALUES ('{artist_name}', {v});\n"
             insert_statement += sql_string
         return insert_statement
 
@@ -48,8 +49,9 @@ class CSVToSQL:
         insert_statements = [f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({row[0]}, {row[1]}, {row[2]});\n" for row in zip(self.listen_data['user_id'], self.listen_data['artist_id'], self.listen_data['scrobbles'])]
         return "".join(insert_statements)
 
+    def create_all_sql(self):
+        return self.create_sql_users(), self.create_sql_artists(), self.create_sql_listens()
+
 if __name__ == "__main__":
     converter = CSVToSQL('./data/lastfm_user_scrobbles.csv', './data/lastfm_artist_list.csv')
-    converter.create_sql_users()
-    converter.create_sql_artists()
-    converter.create_sql_listens()
+    converter.create_all_sql()

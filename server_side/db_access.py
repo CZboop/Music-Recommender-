@@ -10,7 +10,8 @@ cur = conn.cursor()
 
 cur.execute('CREATE TABLE IF NOT EXISTS users (auto_id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT, id INTEGER);')
 cur.execute('CREATE TABLE IF NOT EXISTS artists (auto_id BIGSERIAL PRIMARY KEY NOT NULL, name TEXT NOT NULL, id INTEGER);')
-cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (auto_id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(id), artist_id INTEGER NOT NULL REFERENCES artists(id), rating INTEGER);')
+cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (auto_id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(auto_id), artist_id INTEGER NOT NULL REFERENCES artists(auto_id), rating INTEGER);')
+# may want to rethink or just keep in mind above for the joining table - using serial to reference the artists and users not necessarily id from original data
 
 # TODO:
 # add existing data to db if first time running

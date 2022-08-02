@@ -15,13 +15,13 @@ class CSVToSQL:
         self.listen_data = pd.read_csv(self.listen_data_path)
         self.artist_data = pd.read_csv(self.artist_data_path)
 
-    def _to_rating(self, user_id, min_rating = 5, max_rating = 10):
+    def _to_rating(self, user_id):
         user_slice = self.listen_data.loc[self.listen_data['user_id']==user_id]
 
         min_for_user = min(list(user_slice['scrobbles']))
         max_for_user = max(list(user_slice['scrobbles']))
 
-        self.listen_data.loc[self.listen_data['user_id']==user_id, 'scrobbles'] = self.listen_data.loc[self.listen_data['user_id']==user_id, 'scrobbles'].apply(lambda x: min_rating if min_for_user == max_for_user else math.ceil((x - min_for_user ) / (max_for_user - min_for_user) * min_rating) + (min_rating - max_rating))
+        self.listen_data.loc[self.listen_data['user_id']==user_id, 'scrobbles'] = self.listen_data.loc[self.listen_data['user_id']==user_id, 'scrobbles'].apply(lambda x: 5 if min_for_user == max_for_user else math.ceil((x - min_for_user ) / (max_for_user - min_for_user) * 5) + 5)
         return self.listen_data
 
     def _listens_to_rating(self):

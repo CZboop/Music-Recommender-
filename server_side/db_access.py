@@ -13,14 +13,18 @@ cur.execute('CREATE TABLE IF NOT EXISTS artists (auto_id BIGSERIAL PRIMARY KEY N
 cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (auto_id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(auto_id), artist_id INTEGER NOT NULL REFERENCES artists(auto_id), rating INTEGER);')
 # may want to rethink or just keep in mind above for the joining table - using serial to reference the artists and users not necessarily id from original data
 
-# TODO:
 # add existing data to db if first time running
+# creating psql friendly user data that can go straight into table, using class that does this
 starter_data = CSVToSQL('./data/lastfm_user_scrobbles.csv', './data/lastfm_artist_list.csv')
 user_starter_data , artist_starter_data , listen_starter_data = starter_data.create_all_sql()
+# adding the data
 cur.execute(user_starter_data)
 cur.execute(artist_starter_data)
 cur.execute(listen_starter_data)
+# TODO:
 # add user creation method api and database
+def add_user(user_name, id="NULL"):
+    cur.execute(f"INSERT INTO users (name, id) VALUES ('{user_name}', {id});")
 # add new users + ratings from api
 # retrieve all data to then put into spark df
 # artist creation method

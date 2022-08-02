@@ -1,7 +1,9 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
+import psycopg2
+import os
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -28,6 +30,24 @@ class Artists(Resource):
         parser.add_argument('name', required=True, type=str, location='values')
         args = parser.parse_args()
         return {'id': args['id'], 'name': args['name']}, 200
+
+def get_db_connection():
+    conn = psycopg2.connect(host='localhost',
+                            database='recommend',
+                            user=os.environ['DB_USERNAME'],
+                            password=os.environ['DB_PASSWORD'])
+    return conn
+
+
+@app.route('/')
+def home():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM artists;')
+    artists = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('home.html', artists=artists)
 
 # mapping classes to paths in api
 api.add_resource(Users, '/users')

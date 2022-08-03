@@ -10,7 +10,7 @@ app = Flask(__name__)
 api = Api(app)
 
 @app.route('/add-user/', methods=('GET', 'POST'))
-def create():
+def add_user():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -19,7 +19,6 @@ def create():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
-        #crypt(**?, gen_salt('bf', 8))
         conn.commit()
         cur.close()
         conn.close()
@@ -28,21 +27,21 @@ def create():
 
     return render_template('add_user.html')
 
-# class Users(Resource):
-#     def get(self):
-#         return {'User Id': 'Username'}, 200
-#     # for post request taking in path variables after /resource-path?arg1=value1&arg2=value2
-#     def post(self):
-#         parser = reqparse.RequestParser()
-#         parser.add_argument('name', required=True, type=str, location='values')
-#         args = parser.parse_args()
-#         conn = get_db_connection()
-#         cur = conn.cursor()
-#         cur.execute(f"INSERT INTO users (name, id) VALUES ('{args['name']}', NULL);")
-#         conn.commit()
-#         cur.close()
-#         conn.close()
-#         return {'name': args['name']}, 200
+@app.route('/add-artist/', methods=('GET', 'POST'))
+def add_artist():
+    if request.method == 'POST':
+        name = request.form['name']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO artists (name) VALUES ('{name}');")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return redirect(url_for('home'))
+
+    return render_template('add_artist.html')
 
 class Artists(Resource):
     def get(self):

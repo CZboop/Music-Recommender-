@@ -15,10 +15,15 @@ class Users(Resource):
     # for post request taking in path variables after /resource-path?arg1=value1&arg2=value2
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('id', required=True, type=int, location='values')
         parser.add_argument('name', required=True, type=str, location='values')
         args = parser.parse_args()
-        return {'id': args['id'], 'name': args['name']}, 200
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO users (name, id) VALUES ('{args['name']}', NULL);")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {'name': args['name']}, 200
 
 class Artists(Resource):
     def get(self):

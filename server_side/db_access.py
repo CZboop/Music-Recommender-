@@ -23,8 +23,6 @@ cur.execute(artist_starter_data)
 cur.execute(listen_starter_data)
 # TODO:
 # add user creation method api and database
-def add_user(user_name, id="NULL"):
-    cur.execute(f"INSERT INTO users (name, id) VALUES ('{user_name}', {id});")
 # add new users + ratings from api
 # retrieve all data to then put into spark df
 # artist creation method

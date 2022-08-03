@@ -13,6 +13,8 @@ cur.execute('CREATE TABLE IF NOT EXISTS artists (auto_id BIGSERIAL PRIMARY KEY N
 cur.execute('CREATE TABLE IF NOT EXISTS user_ratings (auto_id BIGSERIAL PRIMARY KEY NOT NULL, user_id INTEGER NOT NULL REFERENCES users(auto_id), artist_id INTEGER NOT NULL REFERENCES artists(auto_id), rating INTEGER);')
 # may want to rethink or just keep in mind above for the joining table - using serial to reference the artists and users not necessarily id from original data
 
+cur.execute('CREATE EXTENSION IF NOT EXISTS pgcrypto;')
+
 # add existing data to db if first time running
 # creating psql friendly user data that can go straight into table, using class that does this
 starter_data = CSVToSQL('./data/lastfm_user_scrobbles.csv', './data/lastfm_artist_list.csv')

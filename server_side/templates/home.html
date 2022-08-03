@@ -5,7 +5,7 @@
 {% block content %}
     <h1>{% block title %} Artists {% endblock %}</h1>
     {% for artist in artists %}
-        <div class='book'>
+        <div class='artist'>
             <h3>#{{ artist[0] }} - {{ artist[1] }}</h3>
         </div>
     {% endfor %}

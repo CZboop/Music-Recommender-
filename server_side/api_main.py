@@ -43,16 +43,34 @@ def add_artist():
 
     return render_template('add_artist.html')
 
-class Artists(Resource):
-    def get(self):
-        return {'Artist Id': 'Artist Name'}, 200
-    # for post request taking in path variables after /resource-path?arg1=value1&arg2=value2
-    def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('id', required=True, type=int, location='values')
-        parser.add_argument('name', required=True, type=str, location='values')
-        args = parser.parse_args()
-        return {'id': args['id'], 'name': args['name']}, 200
+@app.route('/rate-artist/', methods=('GET', 'POST'))
+def rate_artist():
+    if request.method == 'POST':
+        #TODO:
+        user_id = request.form['userid']
+        artist_name = request.form['artist']
+        # method to get artist id from name?
+        artist_id = 100
+        rating = request.form['rating']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM artists;')
+    artists = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('rate_artist.html', artists=artists)
+
+# TODO: create login method, to allow proper ratings
 
 def get_db_connection():
     conn = psycopg2.connect(host='localhost',
@@ -60,7 +78,6 @@ def get_db_connection():
                             user=os.environ['DB_USERNAME'],
                             password=os.environ['DB_PASSWORD'])
     return conn
-
 
 @app.route('/')
 def home():
@@ -71,10 +88,6 @@ def home():
     cur.close()
     conn.close()
     return render_template('home.html', artists=artists)
-
-# mapping classes to paths in api
-# api.add_resource(Users, '/users')
-api.add_resource(Artists, '/artists')
 
 if __name__=="__main__":
     app.run(debug=True)

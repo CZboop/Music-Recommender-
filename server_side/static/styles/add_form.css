@@ -6,3 +6,8 @@ body {
   font-family: Bebas Neue, sans-serif;
   margin-left: 3em;
 }
+
+.dropdown {
+  width: 10%;
+  color: black;
+}

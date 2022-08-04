@@ -46,11 +46,9 @@ def add_artist():
 @app.route('/rate-artist/', methods=('GET', 'POST'))
 def rate_artist():
     if request.method == 'POST':
-        #TODO:
         user_id = request.form['userid']
         artist_name = request.form['artist']
-        # method to get artist id from name?
-        artist_id = 100
+        artist_id = get_artist_id_from_name(artist_name)
         rating = request.form['rating']
 
         conn = get_db_connection()
@@ -88,6 +86,15 @@ def home():
     cur.close()
     conn.close()
     return render_template('home.html', artists=artists)
+
+def get_artist_id_from_name(name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT auto_id FROM artists WHERE name = '{name}';")
+    artist_id = cur.fetchall()
+    cur.close()
+    conn.close()
+    return artist_id[0][0]
 
 if __name__=="__main__":
     app.run(debug=True)

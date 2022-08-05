@@ -11,7 +11,8 @@ api = Api(app)
 
 #TODO:
 # add second password confirm field
-@app.route('/add-user/', methods=('GET', 'POST'))
+# add validations for password security and username email not in use
+@app.route('/sign-up/', methods=('GET', 'POST'))
 def add_user():
     if request.method == 'POST':
         username = request.form['username']
@@ -27,7 +28,7 @@ def add_user():
 
         return redirect(url_for('home'))
 
-    return render_template('add_user.html')
+    return render_template('sign_up.html')
 
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
@@ -70,8 +71,6 @@ def rate_artist():
     conn.close()
     return render_template('rate_artist.html', artists=artists)
 
-# TODO: create login method, to allow proper ratings
-
 def get_db_connection():
     conn = psycopg2.connect(host='localhost',
                             database='recommend',
@@ -107,7 +106,7 @@ def login():
             ## TODO:
             # add error page and handle
         else:
-            return render_template('home.html')
+            return redirect(url_for('home.html'))
 
     return render_template('login.html')
 

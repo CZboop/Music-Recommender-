@@ -92,8 +92,22 @@ def home():
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
-        pass
-        #TODO
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM users WHERE name = '{username}' AND password = crypt('{password}', password);")
+        user = cur.fetchall()
+        print(user)
+        cur.close()
+        conn.close()
+        if len(user) != 1:
+            print("invalid login details")
+            ## TODO:
+            # add error page and handle
+        else:
+            return render_template('home.html')
 
     return render_template('login.html')
 

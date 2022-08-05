@@ -9,6 +9,8 @@ import os
 app = Flask(__name__)
 api = Api(app)
 
+#TODO:
+# add second password confirm field
 @app.route('/add-user/', methods=('GET', 'POST'))
 def add_user():
     if request.method == 'POST':
@@ -86,6 +88,14 @@ def home():
     cur.close()
     conn.close()
     return render_template('home.html', artists=artists)
+
+@app.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        pass
+        #TODO
+
+    return render_template('login.html')
 
 def get_artist_id_from_name(name):
     conn = get_db_connection()

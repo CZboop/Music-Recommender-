@@ -80,13 +80,9 @@ def get_db_connection():
 
 @app.route('/')
 def home():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM artists;')
-    artists = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template('home.html', artists=artists)
+    # TODO:
+    # different homepage if logged in or not
+    return render_template('home.html')
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
@@ -104,9 +100,9 @@ def login():
         if len(user) != 1:
             print("invalid login details")
             ## TODO:
-            # add error page and handle
+            # add error page and handle invalid login attempt
         else:
-            return redirect(url_for('home.html'))
+            return redirect(url_for('home'))
 
     return render_template('login.html')
 

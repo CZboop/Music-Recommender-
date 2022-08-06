@@ -3,10 +3,6 @@
 {% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/home.css') }}">{% endblock %}
 
 {% block content %}
-    <h1>{% block title %} Artists {% endblock %}</h1>
-    {% for artist in artists %}
-        <div class='artist'>
-            <h3>#{{ artist[0] }} - {{ artist[1] }}</h3>
-        </div>
-    {% endfor %}
+    <h1>{% block title %} Recommender - Home {% endblock %}</h1>
+    <p>A music recommendation system</p>
 {% endblock %}

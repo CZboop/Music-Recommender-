@@ -7,6 +7,8 @@ import os
 import secrets
 import jwt
 import datetime as dt
+import re
+from validator import PasswordValidator
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -17,12 +19,13 @@ app.config['SECRET_KEY'] = secret
 
 #TODO:
 # validations
+# log in on signup 
 # rate x artists after signup (or login if none rated)
 # recommend to user
 
 #TODO:
-# add second password confirm field check here (already in html)
 # add validations for password security and username email not in use
+# note what if submit and not all filled in?
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
     if request.method == 'POST':
@@ -36,14 +39,18 @@ def sign_up():
 
         # TODO: more validation here...
         else:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
-            conn.commit()
-            cur.close()
-            conn.close()
+            password_validator = PasswordValidator(password)
+            if not password_validator.is_valid():
+                flash("Password should contain at least one character, one number, one special character and should be at least 8 characters long. Please try again.")
+            else:
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+                conn.commit()
+                cur.close()
+                conn.close()
 
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
 
     return render_template('sign_up.html')
 

@@ -16,7 +16,7 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# add second password confirm field
+# add second password confirm field check here (already in html)
 # add validations for password security and username email not in use
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -87,10 +87,13 @@ def get_db_connection():
 @app.route('/')
 def home():
     # TODO:
-    # different homepage if logged in or not
-    if session['user']:
-        print("logged in")
-    return render_template('home.html')
+    # flesh out different homepage if logged in or not
+    message = "Welcome!"
+    if 'user' in session:
+        token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
+        username = token_decode['username']
+        message = f"Welcome, {username}!"
+    return render_template('home.html', welcome_message=message)
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():

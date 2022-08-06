@@ -3,6 +3,7 @@
 {% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/add_form.css') }}">{% endblock %}
 
 {% block content %}
+  <h1>{% block title %}Logged Out {% endblock %}</h1>
   <p> Logged out successfully! </p>
   <a href="{{ url_for('home') }}">Return to home</a>
 {% endblock %}

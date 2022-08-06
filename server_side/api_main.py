@@ -16,8 +16,6 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# add to navbar and route all pages from it
-# log out method
 # validations
 # rate x artists after signup (or login if none rated)
 # recommend to user

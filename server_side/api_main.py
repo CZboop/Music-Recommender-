@@ -1,19 +1,23 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, flash
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
 import psycopg2
 import os
+import secrets
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
 api = Api(app)
 
+secret = secrets.token_urlsafe(32)
+app.secret_key = secret
+
 #TODO:
 # add second password confirm field
 # add validations for password security and username email not in use
 @app.route('/sign-up/', methods=('GET', 'POST'))
-def add_user():
+def sign_up():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -94,13 +98,10 @@ def login():
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM users WHERE name = '{username}' AND password = crypt('{password}', password);")
         user = cur.fetchall()
-        print(user)
         cur.close()
         conn.close()
         if len(user) != 1:
-            print("invalid login details")
-            ## TODO:
-            # add error page and handle invalid login attempt
+            flash("invalid login details")
         else:
             return redirect(url_for('home'))
 

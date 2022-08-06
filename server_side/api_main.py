@@ -1,17 +1,19 @@
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, session
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
 import psycopg2
 import os
 import secrets
+import jwt
+import datetime as dt
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
 api = Api(app)
 
 secret = secrets.token_urlsafe(32)
-app.secret_key = secret
+app.config['SECRET_KEY'] = secret
 
 #TODO:
 # add second password confirm field
@@ -86,6 +88,8 @@ def get_db_connection():
 def home():
     # TODO:
     # different homepage if logged in or not
+    if session['user']:
+        print("logged in")
     return render_template('home.html')
 
 @app.route('/login', methods=('GET', 'POST'))
@@ -103,9 +107,21 @@ def login():
         if len(user) != 1:
             flash("invalid login details")
         else:
+            token = jwt.encode({'username': username, 'exp' : dt.datetime.utcnow() + dt.timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+            json_token = jsonify({'token': token})
+            session['user'] = token
             return redirect(url_for('home'))
 
     return render_template('login.html')
+
+def get_user_from_name(name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM users WHERE name = '{name}';")
+    user_query_res = cur.fetchall()
+    cur.close()
+    conn.close()
+    return user_query_res[0][0]
 
 def get_artist_id_from_name(name):
     conn = get_db_connection()

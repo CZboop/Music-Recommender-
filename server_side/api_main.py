@@ -8,7 +8,7 @@ import secrets
 import jwt
 import datetime as dt
 import re
-from validator import PasswordValidator
+from validator import PasswordValidator, UsernameValidator, EmailValidator
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = secret
 
 #TODO:
 # validations
-# log in on signup 
+# log in on signup
 # rate x artists after signup (or login if none rated)
 # recommend to user
 
@@ -43,14 +43,24 @@ def sign_up():
             if not password_validator.is_valid():
                 flash("Password should contain at least one character, one number, one special character and should be at least 8 characters long. Please try again.")
             else:
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
-                conn.commit()
-                cur.close()
-                conn.close()
+                username_validator = UsernameValidator(username)
+                if username_validator.is_username_in_use():
+                    flash("Username already in use. Please try again.")
+                else:
+                    email_validator = EmailValidator(email)
+                    if email_validator.is_email_in_use():
+                        flash("Email already in use. Please try again.")
+                    # TODO:
+                    # check email is valid
+                    else:
+                        conn = get_db_connection()
+                        cur = conn.cursor()
+                        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+                        conn.commit()
+                        cur.close()
+                        conn.close()
 
-                return redirect(url_for('home'))
+                        return redirect(url_for('home'))
 
     return render_template('sign_up.html')
 

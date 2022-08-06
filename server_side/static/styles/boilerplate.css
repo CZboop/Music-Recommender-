@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito+Sans:ital,wght@1,300&display=swap');
+
+body {
+  background-color: rgb(60,60,60);
+  color: white;
+  font-family: Bebas Neue, sans-serif;
+  margin-left: 3em;
+}
+
+.navbar {
+  background-color: rgb(120,120,120);
+  width: 90%;
+  font-size: 2em;
+  margin-top: 0.5em;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: black;
+}

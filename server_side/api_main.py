@@ -16,6 +16,13 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
+# add to navbar and route all pages from it
+# log out method
+# validations
+# rate x artists after signup (or login if none rated)
+# recommend to user
+
+#TODO:
 # add second password confirm field check here (already in html)
 # add validations for password security and username email not in use
 @app.route('/sign-up/', methods=('GET', 'POST'))
@@ -23,16 +30,22 @@ def sign_up():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
         email = request.form['email']
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
-        conn.commit()
-        cur.close()
-        conn.close()
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.")
 
-        return redirect(url_for('home'))
+        # TODO: more validation here...
+        else:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return redirect(url_for('home'))
 
     return render_template('sign_up.html')
 
@@ -108,7 +121,7 @@ def login():
         cur.close()
         conn.close()
         if len(user) != 1:
-            flash("invalid login details")
+            flash("Invalid login details")
         else:
             token = jwt.encode({'username': username, 'exp' : dt.datetime.utcnow() + dt.timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
             json_token = jsonify({'token': token})

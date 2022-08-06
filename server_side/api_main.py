@@ -130,6 +130,11 @@ def login():
 
     return render_template('login.html')
 
+@app.route('/log-out', methods=['GET'])
+def logout():
+    del session['user']
+    return render_template('log_out.html')
+
 def get_user_from_name(name):
     conn = get_db_connection()
     cur = conn.cursor()

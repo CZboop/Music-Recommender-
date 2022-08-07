@@ -4,17 +4,11 @@
 
 {% block content %}
     <h1>{% block title %}Rate Artist {% endblock %}</h1>
+    {% if logged_in %}
 <form method="post">
     <p>
-        <label for="userid">User ID: </label>
-        <input type="number" name="userid"
-               placeholder="User ID">
-        </input>
-    </p>
-    <p>
         <label for="artist">Artist: </label>
-        <select name="artist"
-               placeholder="will be a dropdown" class="dropdown">
+        <select name="artist" class="dropdown">
                {% for artist in artists %}
                 <option value="{{ artist[1] }}">{{ artist[1] }}</option>
                {% endfor %}
@@ -30,4 +24,7 @@
         <button type="submit">Submit</button>
     </p>
 </form>
+{% else %}
+<p>Please <a href="{{ url_for('login') }}">log in</a> to rate artists!</p>
+{% endif %}
 {% endblock %}

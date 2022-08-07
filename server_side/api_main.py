@@ -85,20 +85,24 @@ def add_artist():
 
 @app.route('/rate-artist/', methods=('GET', 'POST'))
 def rate_artist():
-    if request.method == 'POST':
-        user_id = request.form['userid']
-        artist_name = request.form['artist']
-        artist_id = get_artist_id_from_name(artist_name)
-        rating = request.form['rating']
+    logged_in = False
+    if 'user' in session:
+        logged_in = True
+        if request.method == 'POST':
+            username = get_username_from_token()
+            user_id = get_user_from_name(username)
+            artist_name = request.form['artist']
+            artist_id = get_artist_id_from_name(artist_name)
+            rating = request.form['rating']
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-        conn.commit()
-        cur.close()
-        conn.close()
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+            conn.commit()
+            cur.close()
+            conn.close()
 
-        return redirect(url_for('home'))
+            return redirect(url_for('home'))
 
     conn = get_db_connection()
     cur = conn.cursor()
@@ -106,7 +110,7 @@ def rate_artist():
     artists = cur.fetchall()
     cur.close()
     conn.close()
-    return render_template('rate_artist.html', artists=artists)
+    return render_template('rate_artist.html', artists=artists, logged_in=logged_in)
 
 def get_db_connection():
     conn = psycopg2.connect(host='localhost',
@@ -121,10 +125,14 @@ def home():
     # flesh out different homepage if logged in or not
     message = "Welcome!"
     if 'user' in session:
-        token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
-        username = token_decode['username']
+        username = get_username_from_token()
         message = f"Welcome, {username}!"
     return render_template('home.html', welcome_message=message)
+
+def get_username_from_token():
+    token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
+    username = token_decode['username']
+    return username
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():

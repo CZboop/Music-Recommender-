@@ -18,14 +18,10 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# validations
 # log in on signup
 # rate x artists after signup (or login if none rated)
 # recommend to user
 
-#TODO:
-# add validations for password security and username email not in use
-# note what if submit and not all filled in?
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
     if request.method == 'POST':
@@ -34,33 +30,37 @@ def sign_up():
         confirm_password = request.form['confirm_password']
         email = request.form['email']
 
-        if password != confirm_password:
-            flash("Passwords do not match. Please try again.")
-
-        # TODO: more validation here...
+        if "" in [username, password, confirm_password, email]:
+            flash("Please ensure all fields are filled in.")
         else:
-            password_validator = PasswordValidator(password)
-            if not password_validator.is_valid():
-                flash("Password should contain at least one character, one number, one special character and should be at least 8 characters long. Please try again.")
-            else:
-                username_validator = UsernameValidator(username)
-                if username_validator.is_username_in_use():
-                    flash("Username already in use. Please try again.")
-                else:
-                    email_validator = EmailValidator(email)
-                    if email_validator.is_email_in_use():
-                        flash("Email already in use. Please try again.")
-                    # TODO:
-                    # check email is valid
-                    else:
-                        conn = get_db_connection()
-                        cur = conn.cursor()
-                        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
-                        conn.commit()
-                        cur.close()
-                        conn.close()
 
-                        return redirect(url_for('home'))
+            if password != confirm_password:
+                flash("Passwords do not match. Please try again.")
+
+            else:
+                password_validator = PasswordValidator(password)
+                if not password_validator.is_valid():
+                    flash("Password should contain at least one character, one number, one special character and should be at least 8 characters long. Please try again.")
+                else:
+                    username_validator = UsernameValidator(username)
+                    if username_validator.is_username_in_use():
+                        flash("Username already in use. Please try again.")
+                    else:
+                        email_validator = EmailValidator(email)
+                        if email_validator.is_email_in_use():
+                            flash("Email already in use. Please try again.")
+                        else:
+                            if not email_validator.is_email_valid():
+                                flash("Email is invalid. Please try again.")
+                            else:
+                                conn = get_db_connection()
+                                cur = conn.cursor()
+                                cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+                                conn.commit()
+                                cur.close()
+                                conn.close()
+
+                                return redirect(url_for('home'))
 
     return render_template('sign_up.html')
 

@@ -18,7 +18,6 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# log in on signup
 # rate x artists after signup (or login if none rated)
 # recommend to user
 
@@ -59,6 +58,10 @@ def sign_up():
                                 conn.commit()
                                 cur.close()
                                 conn.close()
+
+                                # auto login once sign up, making token and adding to session
+                                token = create_token(username)
+                                session['user'] = token
 
                                 return redirect(url_for('home'))
 
@@ -138,12 +141,15 @@ def login():
         if len(user) != 1:
             flash("Invalid login details")
         else:
-            token = jwt.encode({'username': username, 'exp' : dt.datetime.utcnow() + dt.timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+            token = create_token(username)
             json_token = jsonify({'token': token})
             session['user'] = token
             return redirect(url_for('home'))
 
     return render_template('login.html')
+
+def create_token(username):
+    return jwt.encode({'username': username, 'exp' : dt.datetime.utcnow() + dt.timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
 
 @app.route('/log-out', methods=['GET'])
 def logout():

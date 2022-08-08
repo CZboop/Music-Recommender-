@@ -1,0 +1,7 @@
+{% extends 'boilerplate.html' %}
+
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}">{% endblock %}
+
+{% block content %}
+    <h1>{% block title %}Recommendations {% endblock %}</h1>
+{% endblock %}

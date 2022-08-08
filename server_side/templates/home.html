@@ -10,7 +10,7 @@
       {% if num_rated <= 9 %}
       <p>Rate {{ 10 - num_rated }} more artists to get recommendations! </p>
       {% else %}
-      <a href="">Get recommendations.</a>
+      <a href="{{ url_for('recommendations') }}">Get recommendations.</a>
       {% endif %}
     {% endif %}
 {% endblock %}

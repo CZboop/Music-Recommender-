@@ -197,5 +197,9 @@ def get_artists_rated(user_id):
     conn.close()
     return ratings
 
+@app.route('/recommendations')
+def recommendations():
+    return render_template('recommendations.html')
+
 if __name__=="__main__":
     app.run(debug=True)

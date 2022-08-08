@@ -9,6 +9,7 @@ import jwt
 import datetime as dt
 import re
 from validator import PasswordValidator, UsernameValidator, EmailValidator
+from als_recommender import Recommender
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -21,7 +22,11 @@ app.config['SECRET_KEY'] = secret
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # recommend to user
 # log out if token timed out
+# check if token still there before logging out to avoid no such thing type error
+# change recommender to read from db not csv
+# change rate artist dropdown to search
 # add db table to store past recommendations and add a page to view these
+# some on app start setup eg creating db if not already, setting up model
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -197,9 +202,22 @@ def get_artists_rated(user_id):
     conn.close()
     return ratings
 
+# TODO: conditional on number of artists rated
 @app.route('/recommendations')
 def recommendations():
-    return render_template('recommendations.html')
+    recommender = Recommender()
+    logged_in = False
+    recs = None
+    if 'user' in session:
+        logged_in = True
+        username = get_username_from_token()
+        message = f"Welcome, {username}!"
+        userid = get_user_from_name(username)
+        recs = recommender.recommend_subset(recommender.single_user_subset(100), 10)
+        recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+        # getting just artist id using many string slices
+        rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+    return render_template('recommendations.html', recs= rec_artist_ids, logged_in= logged_in)
 
 if __name__=="__main__":
     app.run(debug=True)

@@ -4,4 +4,9 @@
 
 {% block content %}
     <h1>{% block title %}Recommendations {% endblock %}</h1>
+    {% if logged_in == True %}
+    <p>{{recs}} </p>
+    {% else %}
+    <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
+    {% endif %}
 {% endblock %}

@@ -18,8 +18,10 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# rate x artists after signup (or login if none rated)
+# rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # recommend to user
+# log out if token timed out
+# add db table to store past recommendations and add a page to view these
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -123,11 +125,15 @@ def get_db_connection():
 def home():
     # TODO:
     # flesh out different homepage if logged in or not
+    num_rated = 0
     message = "Welcome!"
+    logged_in = False
     if 'user' in session:
+        logged_in = True
         username = get_username_from_token()
         message = f"Welcome, {username}!"
-    return render_template('home.html', welcome_message=message)
+        num_rated = len(get_artists_rated(get_user_from_name(username)))
+    return render_template('home.html', welcome_message=message, num_rated=num_rated, logged_in=logged_in)
 
 def get_username_from_token():
     token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
@@ -181,6 +187,15 @@ def get_artist_id_from_name(name):
     cur.close()
     conn.close()
     return artist_id[0][0]
+
+def get_artists_rated(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM user_ratings WHERE user_id = '{user_id}';")
+    ratings = cur.fetchall()
+    cur.close()
+    conn.close()
+    return ratings
 
 if __name__=="__main__":
     app.run(debug=True)

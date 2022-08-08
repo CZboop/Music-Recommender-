@@ -6,4 +6,11 @@
     <h1>{% block title %}Home {% endblock %}</h1>
     <p>A music recommendation system</p>
     <p>{{ welcome_message }}</p>
+    {% if logged_in == True %}
+      {% if num_rated <= 9 %}
+      <p>Rate {{ 10 - num_rated }} more artists to get recommendations! </p>
+      {% else %}
+      <a href="">Get recommendations.</a>
+      {% endif %}
+    {% endif %}
 {% endblock %}

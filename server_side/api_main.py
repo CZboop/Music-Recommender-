@@ -26,6 +26,7 @@ app.config['SECRET_KEY'] = secret
 # change recommender to read from db not csv
 # change rate artist dropdown to search
 # add db table to store past recommendations and add a page to view these
+# manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
@@ -217,7 +218,17 @@ def recommendations():
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
         # getting just artist id using many string slices
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
-    return render_template('recommendations.html', recs= rec_artist_ids, logged_in= logged_in)
+        rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids]
+    return render_template('recommendations.html', recs= rec_names, logged_in= logged_in)
+
+def get_artists_name_from_id(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT name FROM artists WHERE id = '{id}';")
+    artist = cur.fetchall()
+    cur.close()
+    conn.close()
+    return artist[0][0]
 
 if __name__=="__main__":
     app.run(debug=True)

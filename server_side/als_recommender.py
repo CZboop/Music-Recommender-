@@ -4,6 +4,9 @@ import random
 import math
 from fuzzywuzzy import fuzz
 import time
+from sqlalchemy import create_engine
+import psycopg2
+import os
 
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.functions import col, lower
@@ -13,15 +16,25 @@ from pyspark.ml.tuning import ParamGridBuilder
 
 class Recommender:
     def __init__(self):
-        self.spark_session = SparkSession.builder.appName("Music Recommender").getOrCreate()
+        self.spark_session = SparkSession.builder.master("local").appName("Music Recommender").getOrCreate()
         self.sp_con = self.spark_session.sparkContext
         self._load_data()
         self._make_model()
         self._map_artist_id()
 
     def _load_data(self):
-        self.artists = self.spark_session.read.csv('./data/lastfm_artist_list.csv', inferSchema=True, header=True)
-        self.user_listens = self.spark_session.read.csv('./data/lastfm_user_scrobbles.csv', inferSchema=True, header=True)
+
+        conn = conn = psycopg2.connect(host='localhost',
+                                database='recommend',
+                                user=os.environ['DB_USERNAME'],
+                                password=os.environ['DB_PASSWORD'])
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM user_ratings;')
+        listen_data = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        self.user_listens = self.spark_session.createDataFrame(listen_data)
 
     def _make_model(self):
         self.training_df, self.test_df = self.user_listens.randomSplit([.8, .2])
@@ -32,9 +45,14 @@ class Recommender:
         rank = 8
         errors = []
         err = 0
+        ####===========?******
+        os.environ["SPARK_HOME"] = "/usr/local/Cellar/apache-spark/3.3.0/"
+        os.environ["PYSPARK_PYTHON"]="/usr/local/bin/python3"
+        os.environ["PYSPARK_DRIVER_PYTHON"]="/usr/local/bin/ipython"
+        ####==========
 
         self.als_model = ALS(maxIter = iterations, rank = rank, regParam = regularisation,
-        userCol='user_id', itemCol='artist_id', ratingCol='scrobbles', coldStartStrategy="drop")
+        userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop")
 
         self.model = self.als_model.fit(self.training_df)
 
@@ -65,7 +83,7 @@ class Recommender:
         return recommends
 
     def single_user_subset(self, user_id):
-        subset = self.user_listens.filter(self.user_listens.user_id == user_id)
+        subset = self.user_listens.filter(self.user_listens._3 == user_id)
         # subset.select("user_id").limit(1).show()
         return subset
 

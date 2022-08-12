@@ -20,16 +20,21 @@ app.config['SECRET_KEY'] = secret
 
 #TODO:
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
-# log out if token timed out
+# add rating success page that links to rate more?
+# add links to artists/ more info and display when recommending
 # change rate artist dropdown to search
 # handle rating same artist again
+# add new artist page to navbar/ handle not adding repeats?
 # add db table to store past recommendations and add a page to view these
+# prevent same recommendations being repeated?
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
 # ensure using the right user id
 # maybe manage multiple flash messages at once
 # styling
 # mobile /small screen friendly
+# refactor
+# add way to see artists with highest avg rating/ other basic new artist finding methods?
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -81,6 +86,10 @@ def sign_up():
 
     return render_template('sign_up.html')
 
+@app.route('/success')
+def success():
+    return render_template('rating_success.html', artist = request.args.get('artist'), rating = request.args.get('rating'))
+
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
     if not is_token_valid():
@@ -126,7 +135,7 @@ def rate_artist():
             cur.close()
             conn.close()
 
-            return redirect(url_for('home'))
+            return redirect(url_for('success', artist = artist_name, rating = rating))
 
     conn = get_db_connection()
     cur = conn.cursor()

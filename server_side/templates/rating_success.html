@@ -1,0 +1,10 @@
+{% extends 'boilerplate.html' %}
+
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/home.css') }}">{% endblock %}
+
+{% block content %}
+    <h1>{% block title %}Success{% endblock %}</h1>
+    <p>You successfully gave {{ artist }} a rating of {{ rating }}</p>
+    <a href="{{ url_for('rate_artist') }}">Rate another artist</a>
+
+{% endblock %}

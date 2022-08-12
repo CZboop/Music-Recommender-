@@ -63,6 +63,9 @@ def sign_up():
                             if not email_validator.is_email_valid():
                                 flash("Email is invalid. Please try again.")
                             else:
+                                if not is_token_valid():
+                                    return render_template('token_expired.html')
+                                    
                                 conn = get_db_connection()
                                 cur = conn.cursor()
                                 cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
@@ -84,6 +87,9 @@ def add_artist():
         return render_template('token_expired.html')
     if request.method == 'POST':
         name = request.form['name']
+
+        if not is_token_valid():
+            return render_template('token_expired.html')
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -109,6 +115,9 @@ def rate_artist():
             artist_name = request.form['artist']
             artist_id = get_artist_id_from_name(artist_name)
             rating = request.form['rating']
+
+            if not is_token_valid():
+                return render_template('token_expired.html')
 
             conn = get_db_connection()
             cur = conn.cursor()
@@ -156,6 +165,7 @@ def get_username_from_token():
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
+    #TODO: add treatment for user getting here while already logged in
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']

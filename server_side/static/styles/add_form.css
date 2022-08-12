@@ -2,3 +2,25 @@
   width: 10%;
   color: black;
 }
+
+.rating-star {
+  background-color: rgba(0,0,0,0);
+  border: none;
+  font-size: 2em;
+  padding: 0.2em;
+}
+
+.star-container {
+  opacity: 40%;
+  cursor: pointer;
+  display: flex;
+
+}
+
+.star-container:hover {
+  opacity: 100%;
+}
+
+.star-container button:hover ~ button {
+  opacity: 40%;
+}

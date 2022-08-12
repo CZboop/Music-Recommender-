@@ -22,13 +22,13 @@ app.config['SECRET_KEY'] = secret
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # log out if token timed out
 # change rate artist dropdown to search
-# change rate artist number selection to stars
 # add db table to store past recommendations and add a page to view these
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
 # ensure using the right user id
 # maybe manage multiple flash messages at once
 # styling
+# mobile /small screen friendly
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():

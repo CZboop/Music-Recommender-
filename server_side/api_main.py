@@ -64,8 +64,8 @@ def sign_up():
                                 flash("Email is invalid. Please try again.")
                             else:
                                 if not is_token_valid():
-                                    return render_template('token_expired.html')
-                                    
+                                    return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+
                                 conn = get_db_connection()
                                 cur = conn.cursor()
                                 cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
@@ -84,12 +84,12 @@ def sign_up():
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
     if not is_token_valid():
-        return render_template('token_expired.html')
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
     if request.method == 'POST':
         name = request.form['name']
 
         if not is_token_valid():
-            return render_template('token_expired.html')
+            return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -105,7 +105,7 @@ def add_artist():
 @app.route('/rate-artist/', methods=('GET', 'POST'))
 def rate_artist():
     if not is_token_valid():
-        return render_template('token_expired.html')
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -117,7 +117,7 @@ def rate_artist():
             rating = request.form['rating']
 
             if not is_token_valid():
-                return render_template('token_expired.html')
+                return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
             conn = get_db_connection()
             cur = conn.cursor()
@@ -227,11 +227,12 @@ def get_artists_rated(user_id):
 @app.route('/recommendations')
 def recommendations():
     if not is_token_valid():
-        return render_template('token_expired.html')
+        #TODO: check if this url could cause issues/ if can use similar app route instead
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
     recommender = Recommender()
     logged_in = False
     recs = None
-    is_token_valid()
+
     if 'user' in session:
         logged_in = True
         username = get_username_from_token()

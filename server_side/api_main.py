@@ -21,12 +21,14 @@ app.config['SECRET_KEY'] = secret
 #TODO:
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # log out if token timed out
-# check if token still there before logging out to avoid no such thing type error
 # change rate artist dropdown to search
+# change rate artist number selection to stars
 # add db table to store past recommendations and add a page to view these
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
 # ensure using the right user id
+# maybe manage multiple flash messages at once
+# styling
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -141,6 +143,7 @@ def home():
     return render_template('home.html', welcome_message=message, num_rated=num_rated, logged_in=logged_in)
 
 def get_username_from_token():
+    # TODO: check user exists in session
     token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
     username = token_decode['username']
     return username
@@ -168,11 +171,13 @@ def login():
     return render_template('login.html')
 
 def create_token(username):
-    return jwt.encode({'username': username, 'exp' : dt.datetime.utcnow() + dt.timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+    expiry_datetime = dt.datetime.utcnow() + dt.timedelta(hours=24)
+    return jwt.encode({'username': username, 'expires' : expiry_datetime.strftime("%m/%d/%Y, %H:%M:%S")}, app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
 @app.route('/log-out', methods=['GET'])
 def logout():
-    del session['user']
+    if 'user' in session:
+        del session['user']
     return render_template('log_out.html')
 
 def get_user_from_name(name):
@@ -208,6 +213,7 @@ def recommendations():
     recommender = Recommender()
     logged_in = False
     recs = None
+    is_token_valid()
     if 'user' in session:
         logged_in = True
         username = get_username_from_token()
@@ -219,6 +225,13 @@ def recommendations():
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
         rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids]
     return render_template('recommendations.html', recs= rec_names, logged_in= logged_in)
+
+def is_token_valid():
+    if 'user' in session:
+        token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
+        expires = token_decode['expires']
+        expires_datetime = dt.datetime.strptime(expires, "%m/%d/%Y, %H:%M:%S")
+        return expires_datetime > dt.datetime.utcnow()
 
 def get_artists_name_from_id(id):
     conn = get_db_connection()

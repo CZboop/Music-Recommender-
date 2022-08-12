@@ -4,19 +4,34 @@ body {
   background-color: rgb(60,60,60);
   color: white;
   font-family: Bebas Neue, sans-serif;
-  margin-left: 3em;
+  margin: 1.5em;
 }
 
 .navbar {
   background-color: rgb(120,120,120);
-  width: 90%;
+  width: 80%;
   font-size: 2em;
-  margin-top: 0.5em;
+  height: 40%;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 20px;
   display: flex;
   justify-content: space-between;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+  padding: 0.7em;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.masthead {
+  display: flex;
+  background-color: rgb(180,180,180);
+  border-radius: 20px;
+}
+
+.masthead h1 {
+  color: white;
+  font-size: 3em;
+  padding: 0.2em;
 }
 
 .navbar a {

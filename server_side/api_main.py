@@ -22,6 +22,7 @@ app.config['SECRET_KEY'] = secret
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # log out if token timed out
 # change rate artist dropdown to search
+# handle rating same artist again
 # add db table to store past recommendations and add a page to view these
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
@@ -32,6 +33,7 @@ app.config['SECRET_KEY'] = secret
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
+    #TODO: add a message/ different page for any logged in user who gets here
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -78,6 +80,8 @@ def sign_up():
 
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
+    if not is_token_valid():
+        return render_template('token_expired.html')
     if request.method == 'POST':
         name = request.form['name']
 
@@ -94,6 +98,8 @@ def add_artist():
 
 @app.route('/rate-artist/', methods=('GET', 'POST'))
 def rate_artist():
+    if not is_token_valid():
+        return render_template('token_expired.html')
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -210,6 +216,8 @@ def get_artists_rated(user_id):
 # TODO: conditional on number of artists rated
 @app.route('/recommendations')
 def recommendations():
+    if not is_token_valid():
+        return render_template('token_expired.html')
     recommender = Recommender()
     logged_in = False
     recs = None

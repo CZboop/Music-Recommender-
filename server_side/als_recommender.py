@@ -45,11 +45,6 @@ class Recommender:
         rank = 8
         errors = []
         err = 0
-        ####===========?******
-        os.environ["SPARK_HOME"] = "/usr/local/Cellar/apache-spark/3.3.0/"
-        os.environ["PYSPARK_PYTHON"]="/usr/local/bin/python3"
-        os.environ["PYSPARK_DRIVER_PYTHON"]="/usr/local/bin/ipython"
-        ####==========
 
         self.als_model = ALS(maxIter = iterations, rank = rank, regParam = regularisation,
         userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop")
@@ -86,9 +81,3 @@ class Recommender:
         subset = self.user_listens.filter(self.user_listens._3 == user_id)
         # subset.select("user_id").limit(1).show()
         return subset
-
-if __name__=="__main__":
-    recommender = Recommender()
-    print(recommender.recommend_all())
-    print(recommender.match_artist("qtipp"))
-    recommender.recommend_subset(recommender.single_user_subset(3), 10).show()

@@ -20,14 +20,13 @@ app.config['SECRET_KEY'] = secret
 
 #TODO:
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
-# recommend to user
 # log out if token timed out
 # check if token still there before logging out to avoid no such thing type error
-# change recommender to read from db not csv
 # change rate artist dropdown to search
 # add db table to store past recommendations and add a page to view these
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
+# ensure using the right user id
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
@@ -214,7 +213,7 @@ def recommendations():
         username = get_username_from_token()
         message = f"Welcome, {username}!"
         userid = get_user_from_name(username)
-        recs = recommender.recommend_subset(recommender.single_user_subset(100), 10)
+        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 10)
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
         # getting just artist id using many string slices
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]

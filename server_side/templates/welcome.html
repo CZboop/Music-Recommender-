@@ -1,9 +1,39 @@
 {% extends 'boilerplate.html' %}
 
-{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/home.css') }}">{% endblock %}
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/welcome.css') }}"><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/add_form.css') }}">{% endblock %}
 
 {% block content %}
     <h1>{% block title %}Welcome!{% endblock %}</h1>
-    <p>You've now signed up!</p>
-    <p>Rate some artists to get started.</p>
+    <p>Welcome {{ username }}!</p>
+    <p>You're now signed up.</p>
+    <p>Rate some artists to get started!</p>
+    <div class='progress-bar'>
+      <div class='progress-fill'></div>
+      <span class='progress-text'>{{ num_rated }}/10</span>
+    </div>
+    <script>
+      function updateProgressBar(numRated) {
+        document.querySelector('.progress-fill').style.width = `${numRated*10}%`;
+        document.querySelector('.progress-text').textContent = `${numRated}/10`;
+      }
+      updateProgressBar({{ num_rated }});
+    </script>
+    <form method="post">
+        <p>
+            <label for="artist">Artist: </label>
+            <select name="artist" class="dropdown">
+                   {% for artist in artists %}
+                    <option value="{{ artist[1] }}">{{ artist[1] }}</option>
+                   {% endfor %}
+            </select>
+        </p>
+        <p>Click on a star to submit your rating!</p>
+
+        <div class="star-container">
+        {% for i in range(10) %}
+          <button type="text" class="rating-star" value="{{ i + 1 }}" name="rating">&#11088;</button>
+
+        {% endfor %}
+        </div>
+    </form>
 {% endblock %}

@@ -78,13 +78,58 @@ def sign_up():
                                 token = create_token(username)
                                 session['user'] = token
 
-                                return redirect(url_for('welcome'))
+                                return redirect(url_for('welcome', username = username))
 
     return render_template('sign_up.html')
 
-@app.route('/welcome')
+@app.route('/welcome', methods=('GET', 'POST'))
 def welcome():
-    return render_template('welcome.html')
+    if not is_token_valid():
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    logged_in = False
+    if 'user' in session:
+        logged_in = True
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
+        if request.method == 'POST':
+            artist_name = request.form['artist']
+            artist_id = get_artist_id_from_name(artist_name)
+            rating = request.form['rating']
+
+            if not is_token_valid():
+                return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+
+            updated = False
+            if is_artist_rated(artist_name) == True:
+                print('updated')
+                # updating if user has already rated artist before
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
+                conn.commit()
+                cur.close()
+                conn.close()
+                updated = True
+
+            else:
+                # else adding in new rating row
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+                conn.commit()
+                cur.close()
+                conn.close()
+                
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM artists;')
+        artists = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        num_rated = len(get_artists_rated(user_id))
+
+        return render_template('welcome.html', username = request.args.get('username'), artists = artists, num_rated = num_rated)
 
 @app.route('/success')
 def success():

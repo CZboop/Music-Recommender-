@@ -20,11 +20,10 @@ app.config['SECRET_KEY'] = secret
 
 #TODO:
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
-# add rating success page that links to rate more?
 # add links to artists/ more info and display when recommending
 # change rate artist dropdown to search
 # handle rating same artist again
-# add new artist page to navbar/ handle not adding repeats?
+# add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
 # add db table to store past recommendations and add a page to view these
 # prevent same recommendations being repeated?
 # manage loading while getting recommendations
@@ -88,7 +87,7 @@ def sign_up():
 
 @app.route('/success')
 def success():
-    return render_template('rating_success.html', artist = request.args.get('artist'), rating = request.args.get('rating'))
+    return render_template('rating_success.html', artist = request.args.get('artist'), rating = request.args.get('rating'), updated = str(request.args.get('updated')))
 
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
@@ -128,14 +127,28 @@ def rate_artist():
             if not is_token_valid():
                 return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-            conn.commit()
-            cur.close()
-            conn.close()
+            updated = False
+            if is_artist_rated(artist_name) == True:
+                print('updated')
+                # updating if user has already rated artist before
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
+                conn.commit()
+                cur.close()
+                conn.close()
+                updated = True
 
-            return redirect(url_for('success', artist = artist_name, rating = rating))
+            else:
+                # else adding in new rating row
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+                conn.commit()
+                cur.close()
+                conn.close()
+
+            return redirect(url_for('success', artist = artist_name, rating = rating, updated = updated))
 
     conn = get_db_connection()
     cur = conn.cursor()
@@ -144,6 +157,26 @@ def rate_artist():
     cur.close()
     conn.close()
     return render_template('rate_artist.html', artists=artists, logged_in=logged_in)
+
+# checking if user already rated an artist to update rather than just re-add rating
+def is_artist_rated(artist_name):
+    if 'user' in session:
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
+        artist_id = get_artist_id_from_name(artist_name)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM user_ratings WHERE artist_id = {artist_id} AND user_id = {user_id};")
+        result = cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return False if not result else True
+
+    else:
+        return None
 
 def get_db_connection():
     conn = psycopg2.connect(host='localhost',

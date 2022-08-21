@@ -4,7 +4,11 @@
 
 {% block content %}
     <h1>{% block title %}Success{% endblock %}</h1>
+    {% if updated == 'False' %}
     <p>You successfully gave {{ artist }} a rating of {{ rating }}</p>
+    {% else %}
+    <p>You successfully updated your rating for {{ artist }} to {{ rating }}</p>
+    {% endif %}
     <a href="{{ url_for('rate_artist') }}">Rate another artist</a>
 
 {% endblock %}

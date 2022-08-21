@@ -22,7 +22,6 @@ app.config['SECRET_KEY'] = secret
 # rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # add links to artists/ more info and display when recommending
 # change rate artist dropdown to search
-# handle rating same artist again
 # add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
 # add db table to store past recommendations and add a page to view these
 # prevent same recommendations being repeated?
@@ -67,8 +66,6 @@ def sign_up():
                             if not email_validator.is_email_valid():
                                 flash("Email is invalid. Please try again.")
                             else:
-                                if not is_token_valid():
-                                    return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
                                 conn = get_db_connection()
                                 cur = conn.cursor()
@@ -81,9 +78,13 @@ def sign_up():
                                 token = create_token(username)
                                 session['user'] = token
 
-                                return redirect(url_for('home'))
+                                return redirect(url_for('welcome'))
 
     return render_template('sign_up.html')
+
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html')
 
 @app.route('/success')
 def success():

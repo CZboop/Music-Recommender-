@@ -19,6 +19,7 @@
       }
       updateProgressBar({{ num_rated }});
     </script>
+    {% if num_rated != 10 %}
     <form method="post">
         <p>
             <label for="artist">Artist: </label>
@@ -37,6 +38,11 @@
         {% endfor %}
         </div>
     </form>
+    {% else %}
+    <p>Nice!</p>
+    <p><a href="{{ url_for('rate_artist') }}">Rate more</a></p>
+    <p><a href="{{ url_for('recommendations') }}">Get recommendations</p>
+    {% endif %}
     {% else %}
     <p>You've rated {{ num_rated }} artists... what a pro!</p>
     <p><a href="{{ url_for('rate_artist') }}">Rate more</a></p>

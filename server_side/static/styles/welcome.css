@@ -1,8 +1,8 @@
 .progress-bar {
   width: 95%;
-  height: 30px;
+  height: 2em;
   background-color: blue;
-  border-radius: 10px;
+  border-radius: 1em;
   border: 2px solid blue;
   overflow: hidden;
   margin-left: auto;
@@ -14,6 +14,7 @@
   width: 0%;
   height: 100%;
   background-color: purple;
+  border-radius: 1em;
 }
 
 .progress-text {

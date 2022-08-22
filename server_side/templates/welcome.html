@@ -5,8 +5,9 @@
 {% block content %}
     <h1>{% block title %}Welcome!{% endblock %}</h1>
     <p>Welcome {{ username }}!</p>
+    {% if num_rated <= 10 %}
     <p>You're now signed up.</p>
-    <p>Rate some artists to get started!</p>
+    <p>Rate 10 artists to get started!</p>
     <div class='progress-bar'>
       <div class='progress-fill'></div>
       <span class='progress-text'>{{ num_rated }}/10</span>
@@ -36,4 +37,9 @@
         {% endfor %}
         </div>
     </form>
+    {% else %}
+    <p>You've rated {{ num_rated }} artists... what a pro!</p>
+    <p><a href="{{ url_for('rate_artist') }}">Rate more</a></p>
+    <p><a href="{{ url_for('recommendations') }}">Get recommendations</p>
+    {% endif %}
 {% endblock %}

@@ -9,6 +9,10 @@
         <p>{{rec}}</p>
 
       {% endfor %}
+      <h3>Past Recommendations</h3>
+      {% for past_rec in past_recs %}
+        <p>{{past_rec}}</p>
+      {% endfor %}
     {% else %}
     <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
     {% endif %}

@@ -19,9 +19,7 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
-# rate x artists after signup (or login if none/ less than x rated) - 10 to start?
 # add links to artists/ more info and display when recommending
-# change rate artist dropdown to search
 # add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
 # add db table to store past recommendations and add a page to view these
 # prevent same recommendations being repeated?
@@ -119,7 +117,7 @@ def welcome():
                 conn.commit()
                 cur.close()
                 conn.close()
-                
+
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute('SELECT * FROM artists;')
@@ -330,8 +328,14 @@ def recommendations():
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
         # getting just artist id using many string slices
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+
+        past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
+        store_recommendation(userid , rec_artist_ids)
+
         rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids]
-    return render_template('recommendations.html', recs= rec_names, logged_in= logged_in)
+
+    # TODO: handle user not in session
+    return render_template('recommendations.html', recs= rec_names, logged_in= logged_in, past_recs= past_recs)
 
 def is_token_valid():
     if 'user' in session:
@@ -339,6 +343,24 @@ def is_token_valid():
         expires = token_decode['expires']
         expires_datetime = dt.datetime.strptime(expires, "%m/%d/%Y, %H:%M:%S")
         return expires_datetime > dt.datetime.utcnow()
+
+def get_past_recs(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT artist_id FROM user_recommendations WHERE user_id = '{user_id}';")
+    recommendations = cur.fetchall()
+    cur.close()
+    conn.close()
+    return recommendations
+
+def store_recommendation(user_id, artist_ids):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    for artist_id in artist_ids:
+        cur.execute(f"INSERT INTO user_recommendations (user_id, artist_id) VALUES ({user_id}, {artist_id});")
+        conn.commit()
+    cur.close()
+    conn.close()
 
 def get_artists_name_from_id(id):
     conn = get_db_connection()

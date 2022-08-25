@@ -21,11 +21,8 @@ app.config['SECRET_KEY'] = secret
 #TODO:
 # add links to artists/ more info and display when recommending
 # add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
-# add db table to store past recommendations and add a page to view these
-# prevent same recommendations being repeated?
 # manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
-# ensure using the right user id
 # maybe manage multiple flash messages at once
 # styling
 # mobile /small screen friendly
@@ -64,10 +61,11 @@ def sign_up():
                             if not email_validator.is_email_valid():
                                 flash("Email is invalid. Please try again.")
                             else:
+                                user_id = get_highest_user_id() + 1
 
                                 conn = get_db_connection()
                                 cur = conn.cursor()
-                                cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', NULL, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+                                cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', {user_id}, '{email}', crypt('{password}', gen_salt('bf', 8)));")
                                 conn.commit()
                                 cur.close()
                                 conn.close()
@@ -79,6 +77,15 @@ def sign_up():
                                 return redirect(url_for('welcome', username = username))
 
     return render_template('sign_up.html')
+
+def get_highest_user_id():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT auto_id FROM users ORDER BY auto_id DESC LIMIT 1;')
+    id = cur.fetchall()
+    cur.close()
+    conn.close()
+    return int(id[0][0])
 
 @app.route('/welcome', methods=('GET', 'POST'))
 def welcome():

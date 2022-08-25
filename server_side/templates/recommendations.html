@@ -10,6 +10,10 @@
         <p>{{rec}}</p>
 
       {% endfor %}
+      {% if recs|length <= 3 %}
+        <p>We're struggling to find artists for you that we haven't recommended already!</p>
+        <p><a href="{{ url_for('rate_artist') }}">Rate more artists</a> to get more new recommendations.</p>
+      {% endif %}
       <h3>Past Recommendations</h3>
       {% if past_recs|length >= 1 %}
         {% for past_rec in past_recs %}

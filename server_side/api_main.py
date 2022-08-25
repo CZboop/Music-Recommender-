@@ -324,18 +324,22 @@ def recommendations():
         username = get_username_from_token()
         message = f"Welcome, {username}!"
         userid = get_user_from_name(username)
-        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 10)
+
+        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+
         # getting just artist id using many string slices
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
 
         past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
         store_recommendation(userid , rec_artist_ids)
 
-        rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids]
+        rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
 
-    # TODO: handle user not in session
-    return render_template('recommendations.html', recs= rec_names, logged_in= logged_in, past_recs= past_recs)
+        return render_template('recommendations.html', recs= rec_names, logged_in= logged_in, past_recs= past_recs)
+
+    else:
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 def is_token_valid():
     if 'user' in session:

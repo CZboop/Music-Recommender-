@@ -11,9 +11,13 @@
 
       {% endfor %}
       <h3>Past Recommendations</h3>
-      {% for past_rec in past_recs %}
-        <p>{{past_rec}}</p>
-      {% endfor %}
+      {% if past_recs|length >= 1 %}
+        {% for past_rec in past_recs %}
+          <p>{{past_rec}}</p>
+        {% endfor %}
+      {% else %}
+        <p>You don't have any previous recommendations yet. When you do, they will show up here.</p>
+      {% endif %}
     {% else %}
       <p><a href="{{ url_for('rate_artist') }}">Rate {{ 10 - num_rated }} more artists</a> to get recommendations! </p>
     {% endif %}

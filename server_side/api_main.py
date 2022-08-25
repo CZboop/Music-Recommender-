@@ -309,7 +309,6 @@ def get_artists_rated(user_id):
     conn.close()
     return ratings
 
-# TODO: conditional on number of artists rated
 @app.route('/recommendations')
 def recommendations():
     if not is_token_valid():

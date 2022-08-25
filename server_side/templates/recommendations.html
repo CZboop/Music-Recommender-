@@ -5,6 +5,7 @@
 {% block content %}
     <h1>{% block title %}Recommendations {% endblock %}</h1>
     {% if logged_in == True %}
+    {% if can_recommend == True %}
       {% for rec in recs %}
         <p>{{rec}}</p>
 
@@ -13,6 +14,9 @@
       {% for past_rec in past_recs %}
         <p>{{past_rec}}</p>
       {% endfor %}
+    {% else %}
+      <p><a href="{{ url_for('rate_artist') }}">Rate {{ 10 - num_rated }} more artists</a> to get recommendations! </p>
+    {% endif %}
     {% else %}
     <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
     {% endif %}

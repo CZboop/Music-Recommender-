@@ -315,7 +315,7 @@ def recommendations():
     if not is_token_valid():
         #TODO: check if this url could cause issues/ if can use similar app route instead
         return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
-    recommender = Recommender()
+
     logged_in = False
     recs = None
 
@@ -325,6 +325,16 @@ def recommendations():
         message = f"Welcome, {username}!"
         userid = get_user_from_name(username)
 
+        # returning if not rated many artists with just a message to rate more
+        num_rated = len(get_artists_rated(userid))
+        if num_rated < 10:
+            can_recommend = False
+            rec_names = None
+            past_recs = None
+            return render_template('recommendations.html', recs= rec_names, logged_in= logged_in,
+            past_recs= past_recs, can_recommend = can_recommend, num_rated = num_rated)
+
+        recommender = Recommender()
         recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
 
@@ -335,8 +345,10 @@ def recommendations():
         store_recommendation(userid , rec_artist_ids)
 
         rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
+        can_recommend = True
 
-        return render_template('recommendations.html', recs= rec_names, logged_in= logged_in, past_recs= past_recs)
+        return render_template('recommendations.html', recs= rec_names, logged_in= logged_in,
+        past_recs= past_recs, can_recommend = can_recommend, num_rated = num_rated)
 
     else:
         return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}

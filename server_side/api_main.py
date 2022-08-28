@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, session
+from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, session, render_template_string
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
@@ -10,6 +10,7 @@ import datetime as dt
 import re
 from validator import PasswordValidator, UsernameValidator, EmailValidator
 from als_recommender import Recommender
+import json
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -19,9 +20,9 @@ secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
 #TODO:
+# manage loading while getting recommendations
 # add links to artists/ more info and display when recommending
 # add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
-# manage loading while getting recommendations
 # some on app start setup eg creating db if not already, setting up model
 # maybe manage multiple flash messages at once
 # styling
@@ -316,7 +317,7 @@ def get_artists_rated(user_id):
     conn.close()
     return ratings
 
-@app.route('/recommendations')
+@app.route('/recommendations', methods=['POST', 'GET'])
 def recommendations():
     if not is_token_valid():
         #TODO: check if this url could cause issues/ if can use similar app route instead
@@ -340,24 +341,55 @@ def recommendations():
             return render_template('recommendations.html', recs= rec_names, logged_in= logged_in,
             past_recs= past_recs, can_recommend = can_recommend, num_rated = num_rated)
 
-        recommender = Recommender()
-        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
-        recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+        can_recommend = False
+        rec_names = None
+        past_recs = None
+        # recommender = Recommender()
+        # recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
+        # recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+        #
+        # # getting just artist id using many string slices
+        # rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+        #
+        # past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
+        # store_recommendation(userid , rec_artist_ids)
+        #
+        # rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
 
-        # getting just artist id using many string slices
-        rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
-
-        past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
-        store_recommendation(userid , rec_artist_ids)
-
-        rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
-        can_recommend = True
+        # can_recommend = True
 
         return render_template('recommendations.html', recs= rec_names, logged_in= logged_in,
         past_recs= past_recs, can_recommend = can_recommend, num_rated = num_rated)
 
     else:
         return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    print('starting to recommend...')
+    # TODO: potential edge case where token expires?
+    username = get_username_from_token()
+    userid = get_user_from_name(username)
+
+    # returning if not rated many artists with just a message to rate more
+    num_rated = len(get_artists_rated(userid))
+
+    recommender = Recommender()
+    recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
+    recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+
+    # getting just artist id using many string slices
+    rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+
+    past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
+    store_recommendation(userid , rec_artist_ids)
+
+    rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
+
+    print('recommendations ready to give...')
+    print(rec_names)
+    return jsonify({'data': [rec_names, past_recs]})
+    # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 
 def is_token_valid():
     if 'user' in session:

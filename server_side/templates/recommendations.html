@@ -28,4 +28,26 @@
     {% else %}
     <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
     {% endif %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+  $(function (){
+    recs = getRecommendations()
+
+        function getRecommendations(){
+          $.ajax({
+            url: "/recommend",
+            type: "POST",
+            dataType: "json",
+            complete: function(data){
+              $(recs_container.appendChild(document.createTextNode(`${data.responseText}`)));
+              console.log(typeof data)
+            }
+          });
+
+        }
+
+          })
+</script>
+<div id='recs_container' ></div>
+
 {% endblock %}

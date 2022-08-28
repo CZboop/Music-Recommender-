@@ -366,7 +366,6 @@ def recommendations():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    print('starting to recommend...')
     # TODO: potential edge case where token expires?
     username = get_username_from_token()
     userid = get_user_from_name(username)
@@ -381,13 +380,15 @@ def recommend():
     # getting just artist id using many string slices
     rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
 
-    past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
-    store_recommendation(userid , rec_artist_ids)
+    past_recs = get_past_recs(userid)
+    past_rec_ids = [i[0] for i in past_recs]
 
-    rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
+    # filtering out artists that have already been recommended before adding to db
+    new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
+    store_recommendation(userid , new_artist_ids)
 
-    print('recommendations ready to give...')
-    print(rec_names)
+    rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
+
     return jsonify({'data': [rec_names, past_recs]})
     # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 

@@ -381,15 +381,17 @@ def recommend():
     rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
 
     past_recs = get_past_recs(userid)
+    past_rec_names = [get_artists_name_from_id(i[0]) for i in past_recs]
     past_rec_ids = [i[0] for i in past_recs]
 
     # filtering out artists that have already been recommended before adding to db
     new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
+
     store_recommendation(userid , new_artist_ids)
 
     rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
 
-    return jsonify({'data': [rec_names, past_recs]})
+    return jsonify({'data': [rec_names, past_rec_names]})
     # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 
 def is_token_valid():

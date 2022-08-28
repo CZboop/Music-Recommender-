@@ -390,8 +390,8 @@ def recommend():
     store_recommendation(userid , new_artist_ids)
 
     rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
-
-    return jsonify({'data': [rec_names, past_rec_names]})
+    print(rec_names)
+    return jsonify({'recs': rec_names, 'past_recs': past_rec_names})
     # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 
 def is_token_valid():

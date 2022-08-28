@@ -44,8 +44,24 @@
               $('#recs-loading').show();
             },
             complete: function(data){
-              $(recs_container.appendChild(document.createTextNode(data.responseText)));
               $('#recs-loading').hide();
+              const recs = JSON.parse(data.responseText)['recs']
+              const pastRecs = JSON.parse(data.responseText)['past_recs']
+              for (rec of recs){
+                let pNode = document.createElement("p");
+                pNode.textContent = rec
+                $(recs_container.appendChild(pNode));
+              }
+              if (pastRecs.length > 0){
+                const pastRecHeading = document.createElement("h2");
+                pastRecHeading.textContent = "Past Recommendations";
+                recs_container.appendChild(pastRecHeading);
+                for (pastRec of pastRecs){
+                  let pNode = document.createElement("p");
+                  pNode.textContent = pastRec
+                  $(recs_container.appendChild(pNode));
+                }
+              }
             }
           });
         }

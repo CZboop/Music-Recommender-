@@ -24,7 +24,7 @@ class Recommender:
 
     def _load_data(self):
 
-        conn = conn = psycopg2.connect(host='localhost',
+        conn = psycopg2.connect(host='localhost',
                                 database='recommend',
                                 user=os.environ['DB_USERNAME'],
                                 password=os.environ['DB_PASSWORD'])

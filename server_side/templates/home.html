@@ -8,7 +8,7 @@
     <p>{{ welcome_message }}</p>
     {% if logged_in == True %}
       {% if num_rated <= 9 %}
-      <p><a href="{{ url_for('rate_artist') }}">Rate {{ 10 - num_rated }} more artists</a> to get recommendations! </p>
+      <p><a href="{{ url_for('welcome') }}?username={{ username }}">Rate {{ 10 - num_rated }} more artists</a> to get recommendations! </p>
       {% else %}
       <a href="{{ url_for('recommendations') }}">Get recommendations.</a>
       {% endif %}

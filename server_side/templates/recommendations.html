@@ -4,30 +4,7 @@
 
 {% block content %}
     <h1>{% block title %}Recommendations {% endblock %}</h1>
-    {% if logged_in == True %}
-    {% if can_recommend == True %}
-      {% for rec in recs %}
-        <p>{{rec}}</p>
-
-      {% endfor %}
-      {% if recs|length <= 3 %}
-        <p>We're struggling to find artists for you that we haven't recommended already!</p>
-        <p><a href="{{ url_for('rate_artist') }}">Rate more artists</a> to get more new recommendations.</p>
-      {% endif %}
-      <h3>Past Recommendations</h3>
-      {% if past_recs|length >= 1 %}
-        {% for past_rec in past_recs %}
-          <p>{{past_rec}}</p>
-        {% endfor %}
-      {% else %}
-        <p>You don't have any previous recommendations yet. When you do, they will show up here.</p>
-      {% endif %}
-    {% else %}
-      {% if num_rated <= 9 %}
-        <p><a href="{{ url_for('rate_artist') }}">Rate {{ 10 - num_rated }} more artists</a> to get recommendations! </p>
-      {% endif %}
-    {% endif %}
-    {% else %}
+    {% if logged_in != True %}
     <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
     {% endif %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

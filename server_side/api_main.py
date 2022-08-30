@@ -244,12 +244,13 @@ def home():
     num_rated = 0
     message = "Welcome!"
     logged_in = False
+    username = None
     if 'user' in session:
         logged_in = True
         username = get_username_from_token()
         message = f"Welcome, {username}!"
         num_rated = len(get_artists_rated(get_user_from_name(username)))
-    return render_template('home.html', welcome_message=message, num_rated=num_rated, logged_in=logged_in)
+    return render_template('home.html', welcome_message=message, num_rated=num_rated, logged_in=logged_in, username=username)
 
 def get_username_from_token():
     # TODO: check user exists in session
@@ -344,19 +345,6 @@ def recommendations():
         can_recommend = False
         rec_names = None
         past_recs = None
-        # recommender = Recommender()
-        # recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
-        # recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
-        #
-        # # getting just artist id using many string slices
-        # rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
-        #
-        # past_recs = [get_artists_name_from_id(i[0]) for i in get_past_recs(userid)]
-        # store_recommendation(userid , rec_artist_ids)
-        #
-        # rec_names = [get_artists_name_from_id(i) for i in rec_artist_ids if get_artists_name_from_id(i) not in past_recs]
-
-        # can_recommend = True
 
         return render_template('recommendations.html', recs= rec_names, logged_in= logged_in,
         past_recs= past_recs, can_recommend = can_recommend, num_rated = num_rated)

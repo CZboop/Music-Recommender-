@@ -416,5 +416,9 @@ def get_artists_name_from_id(id):
     conn.close()
     return artist[0][0]
 
+@app.errorhandler(404)
+def page_not_found(event):
+    return render_template('404.html')
+
 if __name__=="__main__":
     app.run(debug=True)

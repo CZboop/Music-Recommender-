@@ -1,0 +1,9 @@
+{% extends 'boilerplate.html' %}
+
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}">{% endblock %}
+
+{% block content %}
+    <h1>{% block title %}404 - Page Not Found {% endblock %}</h1>
+    <p>:(</p>
+    <p>That page does not exist. Check for types or return to <a href="{{ url_for('home') }}">the home page</a></p>
+{% endblock %}

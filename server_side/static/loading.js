@@ -27,3 +27,5 @@ setInterval( ()=> {
     }
   }
 } , 750)
+
+setInterval()

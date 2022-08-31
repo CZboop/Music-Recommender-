@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Chicle&display=swap');
+
+@keyframes upndown {
+    0%   {margin-top: 100px;}
+  50%  {margin-top: 150px;}
+  100% {margin-top: 100px;}
+}
+
+body {
+    background-color: black;
+}
+/* p {
+    color: white;
+    font-family: 'Chicle', cursive;
+    font-size: 2em;
+    padding: 0.3rem;
+
+} */
+.recs-loading{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-self: center;
+}
+
+.letter{
+    margin-top: 100px;
+    animation: upndown 3s infinite;
+    transition: color 0.75s;
+    font-family: 'Chicle', cursive;
+    font-size: 2em;
+    padding: 0.3rem;
+}
+
+.l {
+    color: red;
+}
+.o {
+    color: orange;
+    animation-delay: 0.25s;
+}
+.a {
+    color: yellow;
+    animation-delay: 0.5s;
+}
+.d {
+    color: green;
+    animation-delay: 0.75s;
+}
+.i {
+    color: blue;
+    animation-delay: 1s;
+}
+.n {
+    color: indigo;
+    animation-delay: 1.25s;
+}
+.g {
+    color: violet;
+    animation-delay: 1.5s;
+}
+.d1{
+    color: red;
+    animation-delay: 1.75s;
+}
+.d2{
+    color: orange;
+    animation-delay: 2s;
+}
+.d3{
+    color: yellow;
+    animation-delay: 2.25s;
+}

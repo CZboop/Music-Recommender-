@@ -417,7 +417,7 @@ def get_artists_name_from_id(id):
     return artist[0][0]
 
 @app.errorhandler(404)
-def page_not_found(event):
+def page_not_found(error):
     return render_template('404.html')
 
 if __name__=="__main__":

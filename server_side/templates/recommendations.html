@@ -1,6 +1,6 @@
 {% extends 'boilerplate.html' %}
 
-{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}">{% endblock %}
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/recommend.css') }}">{% endblock %}
 
 {% block content %}
     <h1>{% block title %}Recommendations {% endblock %}</h1>
@@ -18,10 +18,10 @@
             type: "POST",
             dataType: "json",
             beforeSend: function(){
-              $('#recs-loading').show();
+              $('.recs-loading').show();
             },
             complete: function(data){
-              $('#recs-loading').hide();
+              $('.recs-loading').hide();
               const recs = JSON.parse(data.responseText)['recs']
               const pastRecs = JSON.parse(data.responseText)['past_recs']
               for (rec of recs){
@@ -44,7 +44,13 @@
         }
           })
 </script>
-<div id='recs-loading'>LOADING...</div>
+<div class="recs-loading">
+<p class="letter l">L</p> <p class="letter o">O</p> <p class="letter a">A</p> <p class="letter d">D</p>
+<p class="letter i">I</p> <p class="letter n">N</p> <p class="letter g">G</p> <p class="letter d1">.</p>
+<p class="letter d2">.</p> <p class="letter d3">.</p>
+</div>
+
+<script src="{{ url_for('static',filename='styles/boilerplate.css') }}"></script>
 <div id='recs_container'></div>
 
 {% endblock %}

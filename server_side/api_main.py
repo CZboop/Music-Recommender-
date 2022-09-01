@@ -107,7 +107,6 @@ def welcome():
 
             updated = False
             if is_artist_rated(artist_name) == True:
-                print('updated')
                 # updating if user has already rated artist before
                 conn = get_db_connection()
                 cur = conn.cursor()
@@ -181,7 +180,6 @@ def rate_artist():
 
             updated = False
             if is_artist_rated(artist_name) == True:
-                print('updated')
                 # updating if user has already rated artist before
                 conn = get_db_connection()
                 cur = conn.cursor()
@@ -378,7 +376,6 @@ def recommend():
     store_recommendation(userid , new_artist_ids)
 
     rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
-    print(rec_names)
     return jsonify({'recs': rec_names, 'past_recs': past_rec_names})
     # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 

@@ -1,14 +1,3 @@
-{% extends 'boilerplate.html' %}
-
-{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/recommend.css') }}">{% endblock %}
-
-{% block content %}
-    <h1>{% block title %}Recommendations {% endblock %}</h1>
-    {% if logged_in != True %}
-    <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
-    {% endif %}
-<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type=text/javascript>
   $(function (){
     recs = getRecommendations()
 
@@ -29,18 +18,19 @@
                 pNode.textContent = "Sorry, we couldn't find any new recommendations for you. Rate more artists and try again."
                 $(recs_container.appendChild(pNode));
               }
-              else if (recs.length <= 3){
-                let pNode = document.createElement("p");
-                pNode.textContent = "We're struggling to recommend artists that we haven't recommended before. Rate more artists to get more new recommendations."
-                $(recs_container.appendChild(pNode));
-              }
-              else{
+              else {
                 for (rec of recs){
                   let pNode = document.createElement("p");
                   pNode.textContent = rec
                   $(recs_container.appendChild(pNode));
                 }
               }
+              if (0 < recs.length <= 3){
+                let pNode = document.createElement("p");
+                pNode.textContent = "We're struggling to recommend artists that we haven't recommended before. Rate more artists to get more new recommendations."
+                $(recs_container.appendChild(pNode));
+              }
+
 
               if (pastRecs.length > 0){
                 const pastRecHeading = document.createElement("h2");
@@ -56,16 +46,3 @@
           });
         }
           })
-</script> -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="{{ url_for('static',filename='recommend.js') }}"></script>
-<div class="recs-loading">
-<p class="letter l">L</p> <p class="letter o">O</p> <p class="letter a">A</p> <p class="letter d">D</p>
-<p class="letter i">I</p> <p class="letter n">N</p> <p class="letter g">G</p> <p class="letter d1">.</p>
-<p class="letter d2">.</p> <p class="letter d3">.</p>
-</div>
-
-<script src="{{ url_for('static',filename='loading.js') }}"></script>
-<div id='recs_container'></div>
-
-{% endblock %}

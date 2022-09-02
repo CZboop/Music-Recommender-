@@ -19,17 +19,6 @@ api = Api(app)
 secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
-#TODO:
-# manage loading while getting recommendations
-# add links to artists/ more info and display when recommending
-# add new artist page to navbar/ handle not adding repeats? w fuzzy matching...
-# some on app start setup eg creating db if not already, setting up model
-# maybe manage multiple flash messages at once
-# styling
-# mobile /small screen friendly
-# refactor
-# add way to see artists with highest avg rating/ other basic new artist finding methods?
-
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
     #TODO: add a message/ different page for any logged in user who gets here
@@ -377,7 +366,6 @@ def recommend():
 
     rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
     return jsonify({'recs': rec_names, 'past_recs': past_rec_names})
-    # return jsonify('', render_template("update_recommends.html", recs = rec_names))
 
 def is_token_valid():
     if 'user' in session:

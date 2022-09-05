@@ -24,11 +24,6 @@ user_starter_data , artist_starter_data , listen_starter_data = starter_data.cre
 cur.execute(user_starter_data)
 cur.execute(artist_starter_data)
 cur.execute(listen_starter_data)
-# TODO:
-# add new artists
-# add ratings from api (if logged in, so maybe token or other logged in checks)
-# retrieve all data to then put into spark df
-# validation for new things being added
 
 conn.commit()
 

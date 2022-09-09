@@ -31,30 +31,45 @@ def get_artist_urls(artist_names):
     http = httplib2.Http()
     #checking if url fits standard with status code check
     invalid_artists = []
+    artist_urls = {}
     for index, artist in enumerate(artist_names):
         # limiting requests to 50 per minute
-        if index > 0 and index % 50 == 0:
-            time.sleep(60)
-        url = f"https://www.last.fm/music/{'+'.join(artist.split())}"
-        try:
-            req = requests.head(url)
-            status, response = http.request(url)
-            soup = BeautifulSoup(response, 'html.parser')
-            # TODO: deal with invalid urls - mostly 301 redirects, some 404s for really odd names need workarounds
-            if status != 200:
-                if status == 301:
-                    print('301')
-                    print(soup.findall('td',{'class': 'chartlist-name'}))
-                print(artist)
-                print(url)
-                print(status)
-                # print(req.status_code)
-                invalid_artists.append(artist)
-        except requests.ConnectionError:
-            print("connection error")
+        # if index > 0 and index % 50 == 0:
+        #     time.sleep(60)
+        url = "https://www.last.fm/music/" + requests.utils.quote(artist)
+        artist_urls[artist] = url
+        # try:
+        #     req = requests.head(url)
+        #     status, response = http.request(url)
+        #     soup = BeautifulSoup(response, 'html.parser')
+        #     # TODO: deal with invalid urls - mostly 301 redirects, some 404s for really odd names need workarounds
+        #     if status != 200:
+        #         if status == 301:
+        #             print('301')
+        #         # print(soup.find('td',{'class': 'chartlist-name'}))
+        #         # print(artist)
+        #         # print(url)
+        #         # print(status.status)
+        #         # print(req.status_code)
+        #         invalid_artists.append(artist)
+        # except requests.ConnectionError:
+        #     print("connection error")
 
-    print(invalid_artists)
+    # print(invalid_artists)
+    return artist_urls
+
+def add_artist_urls_to_db(artist_urls):
+    for key in artist_urls:
+        artist_name = key.replace("'","''")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"UPDATE artists SET lastfm_link = '{artist_urls[key]}' WHERE name = '{artist_name}';")
+        conn.commit()
+        cur.close()
+        conn.close()
+
 
 if __name__=="__main__":
     # add_url_column()
-    get_artist_urls(get_artist_names())
+    urls = get_artist_urls(get_artist_names())
+    add_artist_urls_to_db(urls)

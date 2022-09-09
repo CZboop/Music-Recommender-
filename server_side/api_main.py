@@ -361,11 +361,18 @@ def recommend():
 
     # filtering out artists that have already been recommended before adding to db
     new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
+    new_artist_links = [get_artist_link_from_id(i) for i in new_artist_ids]
+
+    past_rec_links = [get_artist_link_from_id(i) for i in past_rec_ids]
 
     store_recommendation(userid , new_artist_ids)
 
     rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
-    return jsonify({'recs': rec_names, 'past_recs': past_rec_names})
+
+    rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
+    past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
+
+    return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links})
 
 def is_token_valid():
     if 'user' in session:
@@ -400,6 +407,15 @@ def get_artists_name_from_id(id):
     cur.close()
     conn.close()
     return artist[0][0]
+
+def get_artist_link_from_id(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT lastfm_link FROM artists WHERE id = '{id}';")
+    artist_link = cur.fetchall()
+    cur.close()
+    conn.close()
+    return artist_link[0][0]
 
 @app.errorhandler(404)
 def page_not_found(error):

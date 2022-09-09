@@ -19,28 +19,32 @@
                 $(recs_container.appendChild(pNode));
               }
               else {
-                for (rec of recs){
-                  let pNode = document.createElement("p");
-                  pNode.textContent = rec
+                Object.keys(recs).forEach(function(key){
+                  let pNode = document.createElement("a");
+                  pNode.textContent = key
+                  pNode.href = recs[key]
                   $(recs_container.appendChild(pNode));
-                }
+                  lineBreak = document.createElement("br");
+                  $(recs_container.appendChild(lineBreak));
+                })
               }
               if (0 < recs.length <= 3){
                 let pNode = document.createElement("p");
                 pNode.textContent = "We're struggling to recommend artists that we haven't recommended before. Rate more artists to get more new recommendations."
                 $(recs_container.appendChild(pNode));
               }
-
-
-              if (pastRecs.length > 0){
+              if (Object.keys(pastRecs).length > 0){
                 const pastRecHeading = document.createElement("h2");
                 pastRecHeading.textContent = "Past Recommendations";
                 recs_container.appendChild(pastRecHeading);
-                for (let i = pastRecs.length - 1; i >=0; i--){
-                  let pNode = document.createElement("p");
-                  pNode.textContent = pastRecs[i]
+                Object.keys(pastRecs).slice().reverse().forEach(function(key){
+                  let pNode = document.createElement("a");
+                  pNode.textContent = key
+                  pNode.href = pastRecs[key]
                   $(recs_container.appendChild(pNode));
-                }
+                  lineBreak = document.createElement("br");
+                  $(recs_container.appendChild(lineBreak));
+                })
               }
             }
           });

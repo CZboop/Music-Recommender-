@@ -7,56 +7,7 @@
     {% if logged_in != True %}
     <a href="{{ url_for('login') }}">Log in to get recommendations!</a>
     {% endif %}
-<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type=text/javascript>
-  $(function (){
-    recs = getRecommendations()
-
-        function getRecommendations(){
-          $.ajax({
-            url: "/recommend",
-            type: "POST",
-            dataType: "json",
-            beforeSend: function(){
-              $('.recs-loading').show();
-            },
-            complete: function(data){
-              $('.recs-loading').hide();
-              const recs = JSON.parse(data.responseText)['recs']
-              const pastRecs = JSON.parse(data.responseText)['past_recs']
-              if (recs.length == 0){
-                let pNode = document.createElement("p");
-                pNode.textContent = "Sorry, we couldn't find any new recommendations for you. Rate more artists and try again."
-                $(recs_container.appendChild(pNode));
-              }
-              else if (recs.length <= 3){
-                let pNode = document.createElement("p");
-                pNode.textContent = "We're struggling to recommend artists that we haven't recommended before. Rate more artists to get more new recommendations."
-                $(recs_container.appendChild(pNode));
-              }
-              else{
-                for (rec of recs){
-                  let pNode = document.createElement("p");
-                  pNode.textContent = rec
-                  $(recs_container.appendChild(pNode));
-                }
-              }
-
-              if (pastRecs.length > 0){
-                const pastRecHeading = document.createElement("h2");
-                pastRecHeading.textContent = "Past Recommendations";
-                recs_container.appendChild(pastRecHeading);
-                for (let i = pastRecs.length - 1; i >=0; i--){
-                  let pNode = document.createElement("p");
-                  pNode.textContent = pastRecs[i]
-                  $(recs_container.appendChild(pNode));
-                }
-              }
-            }
-          });
-        }
-          })
-</script> -->
+{% if num_rated >= 10 %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="{{ url_for('static',filename='recommend.js') }}"></script>
 <div class="recs-loading">
@@ -67,5 +18,9 @@
 
 <script src="{{ url_for('static',filename='loading.js') }}"></script>
 <div id='recs_container'></div>
+{% else %}
+<p>Rate {{10 - num_rated}} more artists to get recommendations</p>
+
+{% endif %}
 
 {% endblock %}

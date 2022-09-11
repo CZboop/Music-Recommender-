@@ -28,7 +28,7 @@
                   $(recs_container.appendChild(lineBreak));
                 })
               }
-              if (0 < recs.length <= 3){
+              if (0 < Object.keys(recs).length <= 3){
                 let pNode = document.createElement("p");
                 pNode.textContent = "We're struggling to recommend artists that we haven't recommended before. Rate more artists to get more new recommendations."
                 $(recs_container.appendChild(pNode));

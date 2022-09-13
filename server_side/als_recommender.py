@@ -15,11 +15,11 @@ from pyspark.ml.recommendation import ALS
 from pyspark.ml.tuning import ParamGridBuilder
 
 class Recommender:
-    def __init__(self):
+    def __init__(self, iterations = 12, regularisation = 0.1, rank = 8):
         self.spark_session = SparkSession.builder.master("local").appName("Music Recommender").getOrCreate()
         self.sp_con = self.spark_session.sparkContext
         self._load_data()
-        self._make_model()
+        self._make_model(iterations, regularisation, rank)
         self._map_artist_id()
 
     def _load_data(self):
@@ -33,23 +33,22 @@ class Recommender:
         listen_data = cur.fetchall()
         cur.close()
         conn.close()
-
+        print('=========making df============')
         self.user_listens = self.spark_session.createDataFrame(listen_data)
 
-    def _make_model(self):
+    # may adjust parameters/make dynamic but these seem to be decent default
+    def _make_model(self, iterations = 12, regularisation = 0.1, rank = 8):
         self.training_df, self.test_df = self.user_listens.randomSplit([.8, .2])
 
-        # parameters for the model
-        iterations = 12
-        regularisation = 0.1
-        rank = 8
         errors = []
         err = 0
-
+        print('==========making model============')
         self.als_model = ALS(maxIter = iterations, rank = rank, regParam = regularisation,
         userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop")
-
+        print('=========fitting model============')
         self.model = self.als_model.fit(self.training_df)
+        print('============model complete========')
+
 
     def _map_artist_id(self):
         artist_df = pd.read_csv('./data/lastfm_artist_list.csv')

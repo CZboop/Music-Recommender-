@@ -19,7 +19,7 @@
 <script src="{{ url_for('static',filename='loading.js') }}"></script>
 <div id='recs_container'></div>
 {% else %}
-<p>Rate {{10 - num_rated}} more artists to get recommendations</p>
+<p><a href="{{ url_for('welcome') }}?username={{ session['username'] }}"> Rate {{10 - num_rated}} more artists</a> to get recommendations</p>
 
 {% endif %}
 

@@ -319,6 +319,7 @@ def recommendations():
         username = get_username_from_token()
         message = f"Welcome, {username}!"
         userid = get_user_from_name(username)
+        session['username'] = username
 
         # returning if not rated many artists with just a message to rate more
         num_rated = len(get_artists_rated(userid))

@@ -20,6 +20,10 @@ class Model:
 
         self.spark_session = SparkSession.builder.master("local").appName("Music Recommender").getOrCreate()
         self.sp_con = self.spark_session.sparkContext
+
+        # checkpointing for the long expensive hyperparameter tuning later
+        self.sp_con.setCheckpointDir("/temp/checkpoints")
+
         self._load_data()
         self._make_base_model()
 
@@ -48,14 +52,14 @@ class Model:
         errors = []
         err = 0
 
-        self.als_model = ALS(userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop")
+        self.als_model = ALS(userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop", checkpointInterval=10)
 
     def _make_and_train_model(self, iterations = 12, regularisation = 0.1, rank = 8):
         errors = []
         err = 0
 
         self.als_model = ALS(maxIter = iterations, rank = rank, regParam = regularisation,
-        userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop")
+        userCol='_2', itemCol='_3', ratingCol='_4', coldStartStrategy="drop", checkpointInterval=10)
 
         #final model using all data, rather than train test split
         self.model = self.als_model.fit(self.user_listens)
@@ -63,10 +67,14 @@ class Model:
     # tuning and evaluating model with different hyperparameters to get the best/ a better version of it
     #
     def _tune(self):
+        # param_grid = ParamGridBuilder()\
+        #     .addGrid(self.als_model.rank, [5, 6, 7, 8, 9, 10, 11])\
+        #     .addGrid(self.als_model.maxIter, [8, 10, 12, 14, 16])\
+        #     .addGrid(self.als_model.regParam, [0.05, 0.1, 0.15, 0.2]).build()
         param_grid = ParamGridBuilder()\
-            .addGrid(self.als_model.rank, [i for i in range(5, 16)])\
-            .addGrid(self.als_model.maxIter, [i for i in range(6, 24, 4)])\
-            .addGrid(self.als_model.regParam, [0.05, 0.1, 0.15, 0.3, 0.4]).build()
+            .addGrid(self.als_model.rank, [6, 7])\
+            .addGrid(self.als_model.maxIter, [10, 12])\
+            .addGrid(self.als_model.regParam, [0.1, 0.15]).build()
         eval = RegressionEvaluator(metricName = "rmse", labelCol = '_4', predictionCol = 'prediction')
         cross_validator = CrossValidator(estimator = self.als_model, estimatorParamMaps = param_grid, evaluator = eval, numFolds = 5)
         print(cross_validator)
@@ -74,7 +82,9 @@ class Model:
         best_model = models.bestModel
         print(best_model)
         # extracting hyperparameters from the best model
-        best_rank, best_maxIter, best_regParam = best_model.getRank(), best_model.getMaxIter(), best_model.getRegParam()
+        best_rank = best_model._java_obj.parent().getRank()
+        best_maxIter = best_model._java_obj.parent().getMaxIter()
+        best_regParam = best_model._java_obj.parent().getRegParam()
 
         return [best_rank, best_maxIter, best_regParam]
 

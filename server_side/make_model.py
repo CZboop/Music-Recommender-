@@ -67,14 +67,10 @@ class Model:
     # tuning and evaluating model with different hyperparameters to get the best/ a better version of it
     #
     def _tune(self):
-        # param_grid = ParamGridBuilder()\
-        #     .addGrid(self.als_model.rank, [5, 6, 7, 8, 9, 10, 11])\
-        #     .addGrid(self.als_model.maxIter, [8, 10, 12, 14, 16])\
-        #     .addGrid(self.als_model.regParam, [0.05, 0.1, 0.15, 0.2]).build()
         param_grid = ParamGridBuilder()\
-            .addGrid(self.als_model.rank, [6, 7])\
-            .addGrid(self.als_model.maxIter, [10, 12])\
-            .addGrid(self.als_model.regParam, [0.1, 0.15]).build()
+            .addGrid(self.als_model.rank, [5, 6, 7, 8, 9, 10])\
+            .addGrid(self.als_model.maxIter, [8, 10, 12, 14])\
+            .addGrid(self.als_model.regParam, [0.075, 0.1, 0.125]).build()
         eval = RegressionEvaluator(metricName = "rmse", labelCol = '_4', predictionCol = 'prediction')
         cross_validator = CrossValidator(estimator = self.als_model, estimatorParamMaps = param_grid, evaluator = eval, numFolds = 5)
         print(cross_validator)

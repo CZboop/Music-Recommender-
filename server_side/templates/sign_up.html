@@ -4,6 +4,10 @@
 
 {% block content %}
     <h1>{% block title %}Sign Up {% endblock %}</h1>
+    {% if 'user' in session %}
+    <a>You're still logged in.</a>
+    <p><a href= "{{ url_for('logout') }}" >Log out</a> to sign up again.</p>
+      {% else %}
     {% with messages = get_flashed_messages() %}
     {% if messages %}
         <div>
@@ -40,4 +44,5 @@
         <button type="submit">Submit</button>
     </p>
 </form>
+{% endif %}
 {% endblock %}

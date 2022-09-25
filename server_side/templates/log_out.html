@@ -3,7 +3,12 @@
 {% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/add_form.css') }}">{% endblock %}
 
 {% block content %}
-  <h1>{% block title %}Logged Out {% endblock %}</h1>
+  <h1>{% block title %}Log Out {% endblock %}</h1>
+  {% if logged_out == True %}
   <p> Logged out successfully! </p>
   <a href="{{ url_for('home') }}">Return to home</a>
+  {% else %}
+  <p> You can't log out if you're not logged in. </p>
+  <p><a href="{{ url_for('home') }}">Return to home</a> or <a href="{{ url_for('login') }}">log in</a></p>
+  {% endif %}
 {% endblock %}

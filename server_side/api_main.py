@@ -86,6 +86,7 @@ def welcome():
             return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
         else:
             return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -136,8 +137,14 @@ def success():
 
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
-    if not is_token_valid():
-        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    was_signed_in, is_valid = is_token_valid()
+
+    if not is_valid:
+        if was_signed_in:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+        else:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+
     if request.method == 'POST':
         name = request.form['name']
 
@@ -157,8 +164,14 @@ def add_artist():
 
 @app.route('/rate-artist/', methods=('GET', 'POST'))
 def rate_artist():
-    if not is_token_valid():
-        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    was_signed_in, is_valid = is_token_valid()
+
+    if not is_valid:
+        if was_signed_in:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+        else:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -269,6 +282,7 @@ def login():
             token = create_token(username)
             json_token = jsonify({'token': token})
             session['user'] = token
+            session['logged_in'] = True
             return redirect(url_for('home'))
 
     return render_template('login.html')
@@ -281,7 +295,9 @@ def create_token(username):
 def logout():
     if 'user' in session:
         del session['user']
-    return render_template('log_out.html')
+        return render_template('log_out.html', logged_out = True)
+    else:
+        return render_template('log_out.html', logged_out = False)
 
 def get_user_from_name(name):
     conn = get_db_connection()
@@ -312,9 +328,13 @@ def get_artists_rated(user_id):
 
 @app.route('/recommendations', methods=['POST', 'GET'])
 def recommendations():
-    if not is_token_valid():
-        #TODO: check if this url could cause issues/ if can use similar app route instead
-        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    was_signed_in, is_valid = is_token_valid()
+
+    if not is_valid:
+        if was_signed_in:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+        else:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
 
     logged_in = False
     recs = None

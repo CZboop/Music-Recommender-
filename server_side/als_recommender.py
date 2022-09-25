@@ -17,12 +17,12 @@ from pyspark.ml.tuning import ParamGridBuilder
 from pyspark.ml.pipeline import PipelineModel
 
 class Recommender:
-    def __init__(self, iterations = 12, regularisation = 0.1, rank = 8):
+    def __init__(self, model_path='trained_model'):
         self.spark_session = SparkSession.builder.master("local").appName("Music Recommender").getOrCreate()
         self.sp_con = self.spark_session.sparkContext
+        self.model_path = model_path
         self._load_data()
-        self._make_model(iterations, regularisation, rank)
-        self._map_artist_id()
+        self._make_model()
 
     def _load_data(self):
         conn = psycopg2.connect(host='localhost',
@@ -37,32 +37,12 @@ class Recommender:
 
         self.user_listens = self.spark_session.createDataFrame(listen_data)
 
-    # may adjust parameters/make dynamic but these seem to be decent default
-    def _make_model(self, iterations = 12, regularisation = 0.1, rank = 8):
+    # will be loading in existing model, made by running make_model.py
+    def _make_model(self):
         self.model = self.load_model()
-
-
-    def _map_artist_id(self):
-        artist_df = pd.read_csv('./data/lastfm_artist_list.csv')
-        self.artist_id_dict = {}
-        # in df it's artist_id and artist_name
-        for i in range(1, len(artist_df.index) + 1):
-            self.artist_id_dict[i] = str(artist_df.loc[artist_df['artist_id'] == i]['artist_name'].values[0])
-        return self.artist_id_dict
 
     def recommend_all(self, n_artists = 5):
         return self.model.recommendForAllUsers(n_artists)
-
-    def match_artist(self, artist):
-        artist_match = {}
-        for i, v in self.artist_id_dict.items():
-        # key = artist name
-        # value = [match ratio, artist id]
-            artist_match[v] = [fuzz.ratio(artist.lower(), v.lower()), i]
-        artist_match = sorted(artist_match.items(), key=lambda item: item[1], reverse = True)
-        # returning best match, could later do some more to evaluate based on match level
-        # match returned format will be ("Artist Name", [confidence/match ratio, artist_id])
-        return artist_match[0]
 
     def recommend_subset(self, subset, n_artists):
         recommends = self.model.recommendForUserSubset(subset, n_artists)
@@ -73,6 +53,6 @@ class Recommender:
         # subset.select("user_id").limit(1).show()
         return subset
 
-    def load_model(self, path='trained_model'):
-        trained_model = ALSModel.load(path)
+    def load_model(self):
+        trained_model = ALSModel.load(self.model_path)
         return trained_model

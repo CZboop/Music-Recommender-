@@ -1,9 +1,17 @@
 {% extends 'boilerplate.html' %}
 
 {% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/home.css') }}">{% endblock %}
+{% block title %}Invalid{% endblock %}
 
 {% block content %}
-    <h1>{% block title %}Session Expired{% endblock %}</h1>
-    <p>Your session has expired.</p>
-    <p>You will now be logged out.</p>
+
+  {% if was_signed_in == True %}
+      <h1>Session Expired</h1>
+      <p>Your session has expired.</p>
+      <p>You will now be logged out.</p>
+      {% else %}
+      <h1>Sign In to View</h1>
+      <p>You need to be signed in to see this page.</p>
+      <p>You will now be redirected to the login page.</p>
+  {% endif %}
 {% endblock %}

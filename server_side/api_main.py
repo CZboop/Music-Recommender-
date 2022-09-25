@@ -79,8 +79,13 @@ def get_highest_user_id():
 
 @app.route('/welcome', methods=('GET', 'POST'))
 def welcome():
-    if not is_token_valid():
-        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    was_signed_in, is_valid = is_token_valid()
+
+    if not is_valid:
+        if was_signed_in:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+        else:
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -376,11 +381,14 @@ def recommend():
     return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links})
 
 def is_token_valid():
+    # returns two booleans, first is whether user had ever signed in, second is whether valid
     if 'user' in session:
         token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
         expires = token_decode['expires']
         expires_datetime = dt.datetime.strptime(expires, "%m/%d/%Y, %H:%M:%S")
-        return expires_datetime > dt.datetime.utcnow()
+        return True, expires_datetime > dt.datetime.utcnow()
+    else:
+        return False, False
 
 def get_past_recs(user_id):
     conn = get_db_connection()

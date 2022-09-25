@@ -20,6 +20,7 @@ body {
   padding: 0.7em;
   margin-top: auto;
   margin-bottom: auto;
+  position: relative;
 }
 
 .masthead {
@@ -30,15 +31,62 @@ body {
 
 .masthead h1 {
   color: white;
-  font-size: 3em;
+  font-size: 5vw;
   padding: 0.2em;
 }
 
 .navbar a {
     text-decoration: none;
     color: black;
+    font-size: 3vw;
 }
 
 a {
   color: white;
+}
+
+.burger {
+  display: none;
+}
+
+@media screen and (max-width: 666px) {
+  .navbar a {
+    display: none;
+  }
+  .navbar.open {
+    display: block;
+  }
+  .navbar.open a {
+    display: block;
+  }
+  .navbar.open .burger-toggle {
+    display: block;
+  }
+  .navbar.open .masthead {
+    display: block;
+  }
+  .navbar .burger {
+    position: absolute;
+    display: block;
+    top: 0;
+    bottom: auto;
+    right: 0;
+    cursor: pointer;
+    background: unset;
+  }
+  .navbar .burger svg {
+    stroke: white;
+  }
+  .navbar button {
+    border: none;
+  }
+  #close-button {
+    display: none;
+  }
+  .navbar.open #open-button {
+    display: none;
+  }
+  .navbar.open #close-button {
+    display: block;
+  }
 }

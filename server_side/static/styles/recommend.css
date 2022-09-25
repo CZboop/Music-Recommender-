@@ -6,16 +6,6 @@
   100% {margin-top: 100px;}
 }
 
-body {
-    background-color: black;
-}
-/* p {
-    color: white;
-    font-family: 'Chicle', cursive;
-    font-size: 2em;
-    padding: 0.3rem;
-
-} */
 .recs-loading{
     display: flex;
     width: 100%;

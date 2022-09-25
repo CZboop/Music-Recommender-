@@ -1,44 +1,68 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito+Sans:ital,wght@1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chicle&display=swap');
 
 body {
-  background-color: black;
+  background-color: #1C2121;
   color: white;
   font-family: Bebas Neue, sans-serif;
-  margin: 1.5em;
+  margin: 0px;
+}
+
+.content {
+  padding: 0.5em;
+  margin: 0.5em;
 }
 
 .navbar {
-  background-color: rgb(120,120,120);
-  width: 80%;
+  width: 100%;
   font-size: 2em;
-  height: 40%;
+  height: 10%;
   margin-left: auto;
   margin-right: auto;
   border-radius: 20px;
   display: flex;
   justify-content: space-between;
-  padding: 0.7em;
-  margin-top: auto;
-  margin-bottom: auto;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
   position: relative;
 }
 
 .masthead {
   display: flex;
-  background-color: rgb(180,180,180);
-  border-radius: 20px;
+  background-color: green;
+  margin: none;
+  padding: none;
+  width: 100%;
 }
 
 .masthead h1 {
   color: white;
-  font-size: 5vw;
-  padding: 0.2em;
+  font-size: 1.5em;
+  font-family: 'Chicle', cursive;
+  -webkit-text-stroke: 1px;
+  -webkit-text-stroke-color: black;
+  margin: 0;
 }
 
 .navbar a {
     text-decoration: none;
     color: black;
     font-size: 3vw;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.navbar a:hover {
+    text-decoration: none;
+    /* color: black; */
+    font-size: 3vw;
+    margin-top: auto;
+    margin-bottom: auto;
+    color: white;
+}
+
+.icon:hover {
+  filter: invert(1);
 }
 
 a {
@@ -58,6 +82,7 @@ a {
   }
   .navbar.open a {
     display: block;
+    font-size: 1em;
   }
   .navbar.open .burger-toggle {
     display: block;

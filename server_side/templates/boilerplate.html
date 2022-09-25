@@ -9,16 +9,16 @@
 </head>
 <body>
   <div class='masthead'>
-    <h1>RECOMMENDER</h1>
-    <nav class="navbar" id="navbar">
 
+    <nav class="navbar" id="navbar">
+        <h1>RECOMMENDER</h1>
         <a href="{{ url_for('home') }}">Home</a>
         <a href="{{ url_for('rate_artist') }}">Rate Artists</a>
         <a href="{{ url_for('recommendations') }}">Recommendations</a>
         <a href="{{ url_for('logout') if 'user' in session else url_for('login')}}">{{"Log Out" if 'user' in session else "Log In/Sign Up"}}</a>
         <button class="burger" id="burger-toggle">
           <div id="open-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="black" fill="black" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <line x1="4" y1="6" x2="20" y2="6" />
             <line x1="4" y1="12" x2="20" y2="12" />
@@ -26,7 +26,7 @@
             </svg>
           </div>
           <div id="close-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="black" fill="black" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <rect x="4" y="4" width="16" height="16" rx="2" />
             <path d="M10 10l4 4m0 -4l-4 4" />

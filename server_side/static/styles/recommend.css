@@ -18,7 +18,7 @@
     margin-top: 100px;
     animation: upndown 3s infinite;
     transition: color 0.75s;
-    font-family: 'Chicle', cursive;
+    /* font-family: 'Chicle', cursive; */
     font-size: 2em;
     padding: 0.3rem;
 }

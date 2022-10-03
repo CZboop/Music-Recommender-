@@ -1,0 +1,2 @@
+set DB_USERNAME=postgres
+set DB_PASSWORD=password

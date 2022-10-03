@@ -1,9 +1,9 @@
 .progress-bar {
-  width: 95%;
+  width: 98%;
   height: 2em;
-  background-color: blue;
+  background-color: rgb(233, 233, 243);
   border-radius: 1em;
-  border: 2px solid blue;
+  border: 1px solid red;
   overflow: hidden;
   margin-left: auto;
   margin-right: auto;
@@ -13,7 +13,13 @@
 .progress-fill {
   width: 0%;
   height: 100%;
-  background-color: purple;
+    background: repeating-linear-gradient(
+  -55deg,
+  red,
+  red 1px,
+  white 1px,
+  white 15px
+);
   border-radius: 1em;
 }
 

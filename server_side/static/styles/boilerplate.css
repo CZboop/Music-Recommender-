@@ -18,9 +18,17 @@ body {
   background-size: 10px 10px;
 }
 
+html {
+	cursor: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15" height="20" width="20"><text y="10" font-size="10">🔮</text><path d="M0,2 L0,0 L2,0" fill="red" /></svg>'), auto;
+}
+
 .content {
   padding: 0.5em;
-  margin: 0.5em;
+  margin: 1.5em;
+  /* background-color: rgb(233, 233, 243); */
+  background-color: rgba(233, 233, 243, 0.5);
+  border: 2px solid red;
+  box-shadow: 3px 3px 20px 20px rgba(0, 89, 255, 0.1) inset;
 }
 
 .navbar {
@@ -29,12 +37,20 @@ body {
   height: 15%;
   margin-left: auto;
   margin-right: auto;
-  border-radius: 20px;
+  /* border-radius: 20px; */
   display: flex;
   justify-content: space-between;
   padding-left: 0.5em;
   padding-right: 0.5em;
   position: relative;
+  /* commented out but can do some stripes like below, maybe use in the loading bar */
+  /* background: repeating-linear-gradient(
+  -55deg,
+  rgb(0, 221, 255),
+  rgb(0, 221, 255) 1px,
+  rgb(50, 251, 255) 1px,
+  rgb(50, 251, 255) 15px
+); */
 }
 
 .masthead {
@@ -80,6 +96,29 @@ body {
 
 a {
   color: blue;
+}
+
+select {
+  font-family: 'VT323', monospace;
+  font-size: medium;
+  outline: none;
+}
+
+input[type=text], input[type=password] {
+  font-family: 'VT323', monospace;
+  font-size: medium;
+}
+
+button {
+  font-family: 'VT323', monospace;
+  font-size: larger;
+  border: none;
+  padding: 0.5em;
+  background:rgb(75, 240, 255);
+}
+
+button:hover .button-basic{
+  background-color: white;
 }
 
 .burger {

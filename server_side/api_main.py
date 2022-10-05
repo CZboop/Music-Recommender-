@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, session, render_template_string
+from flask import Flask, render_template, request, url_for, redirect, flash, jsonify, session, render_template_string, make_response
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
@@ -11,6 +11,9 @@ import re
 from validator import PasswordValidator, UsernameValidator, EmailValidator
 from als_recommender import Recommender
 import json
+import urllib.parse
+import random
+import string 
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -119,6 +122,8 @@ def welcome():
                 conn.commit()
                 cur.close()
                 conn.close()
+            
+            # return jsonify({'numRated' : len(get_artists_rated(user_id))})
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -364,6 +369,35 @@ def recommendations():
 
     else:
         return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+
+@app.route('/update-rated', methods=['POST'])
+def update_rated():
+    username = get_username_from_token()
+    user_id = get_user_from_name(username)
+    return jsonify({'num_rated': len(get_artists_rated(user_id))})#
+
+# portal to log in via spotify
+@app.route('/portal', methods=['GET', 'POST'])
+def portal():
+    query_data = {
+        'client_id' : 'd3a917b3eafb4e1fa8a97a032120f7ec',
+        'response_type' : 'code',
+        'redirect_uri' : 'http://127.0.0.1:5000/logging-in',
+        'scope' : """user-library-modify user-library-read user-top-read user-read-recently-played playlist-read-private
+        playlist-read-collaborative playlist-modify-private playlist-modify-public""",
+        'state_key' : ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+    }
+    auth_url = 'https://accounts.spotify.com/authorize?'
+
+    query_params = 'response_type=code&client_id=' + query_data['client_id'] + '&redirect_uri=' + query_data['redirect_uri'] + '&scope=' + query_data['scope'] + '&state=' + query_data['state_key']
+    response = make_response(redirect(auth_url + query_params))
+    return response
+    # return render_template('portal.html')
+
+@app.route('/logging-in')
+def logging_in():
+    pass
+
 
 @app.route('/recommend', methods=['POST'])
 def recommend():

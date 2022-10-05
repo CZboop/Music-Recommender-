@@ -79,6 +79,7 @@ html {
     font-size: 3vw;
     margin-top: auto;
     margin-bottom: auto;
+    /* width: 100%; */
 }
 
 .navbar a:hover {
@@ -88,6 +89,8 @@ html {
     margin-top: auto;
     margin-bottom: auto;
     color: white;
+    /* background-color: blue; */
+    /* width: 100%; */
 }
 
 .icon:hover {
@@ -129,13 +132,26 @@ button:hover .button-basic{
   .navbar a {
     display: none;
   }
+  .content {
+    padding: none;
+  }
   .navbar.open {
     display: block;
+    width: 100%;
+    padding: none;
   }
   .navbar.open a {
     display: block;
     font-size: 1em;
+    width: 100%;
   }
+  .navbar.open a:hover {
+    /* background-color: blue; */
+    text-decoration: underline;
+    text-decoration-color: red;
+    text-decoration-line: 1px solid;
+  }
+  
   .navbar.open .burger-toggle {
     display: block;
   }

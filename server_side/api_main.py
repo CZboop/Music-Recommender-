@@ -13,7 +13,10 @@ from als_recommender import Recommender
 import json
 import urllib.parse
 import random
-import string 
+import string
+import requests
+import base64
+from config_secrets import APP_ID, APP_SECRET
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -380,24 +383,43 @@ def update_rated():
 @app.route('/portal', methods=['GET', 'POST'])
 def portal():
     query_data = {
-        'client_id' : 'd3a917b3eafb4e1fa8a97a032120f7ec',
+        'client_id' : APP_ID,
         'response_type' : 'code',
         'redirect_uri' : 'http://127.0.0.1:5000/logging-in',
         'scope' : """user-library-modify user-library-read user-top-read user-read-recently-played playlist-read-private
         playlist-read-collaborative playlist-modify-private playlist-modify-public""",
         'state_key' : ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
+
     }
+
     auth_url = 'https://accounts.spotify.com/authorize?'
 
     query_params = 'response_type=code&client_id=' + query_data['client_id'] + '&redirect_uri=' + query_data['redirect_uri'] + '&scope=' + query_data['scope'] + '&state=' + query_data['state_key']
     response = make_response(redirect(auth_url + query_params))
+    print(response)
     return response
     # return render_template('portal.html')
 
 @app.route('/logging-in')
 def logging_in():
-    pass
+    code = request.args.get("code")
+    # TODO: handle user rejecting access, will have different response in query params (error instead of code?)
+    # TODO: check state in response is the same as what we sent and reject if doesn't match
+    encoded = base64.urlsafe_b64encode((APP_ID + ':' + APP_SECRET).encode())
 
+    authorization = f'Authorization: Basic {encoded}'
+    # ^base64 encoded combo of client id and secret format: Authorization: Basic <base64 encoded client_id:client_secret>
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    post_params = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': 'http://127.0.0.1:5000/logging-in',"client_id": APP_ID,
+        "client_secret": APP_SECRET}
+    res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
+    print('response: ' + str(res.json()))
+    # above seems to be working BUT
+    # TODO: actually use the returned access token and authorize etc.
+
+def get_auth():
+    pass 
+    # TODO: get access_token, refresh_token from spotify response, store 
 
 @app.route('/recommend', methods=['POST'])
 def recommend():

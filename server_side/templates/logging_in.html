@@ -1,0 +1,12 @@
+{% extends 'boilerplate.html' %}
+
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}">{% endblock %}
+
+{% block content %}
+    <h1>{% block title %}Logged In {% endblock %}</h1>
+    {% if success == True %}
+    <p>Logged in successfully!?</p>
+    {% else %}
+    <p>Something went wrong...</p>
+    {% endif %}
+{% endblock %}

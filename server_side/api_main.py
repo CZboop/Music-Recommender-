@@ -414,12 +414,22 @@ def logging_in():
         "client_secret": APP_SECRET}
     res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
     print('response: ' + str(res.json()))
-    # above seems to be working BUT
-    # TODO: actually use the returned access token and authorize etc.
+    if res.status_code == 200:
+        get_auth_tokens(json.loads(res.text))
+        return render_template('logging_in.html', success = True)
+    else:
+        return render_template('logging_in.html', success = False)
 
-def get_auth():
-    pass 
-    # TODO: get access_token, refresh_token from spotify response, store 
+def get_auth_tokens(response):
+    session['spotify_access_token'] = response['access_token'] 
+    session['spotify_refresh_token'] = response['refresh_token']
+
+def refresh_spotify_token():
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    post_params = {'grant_type': 'refresh_token',"client_id": APP_ID,
+        "client_secret": APP_SECRET}
+    res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
+    # TODO: refresh token when needed...
 
 @app.route('/recommend', methods=['POST'])
 def recommend():

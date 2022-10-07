@@ -416,9 +416,23 @@ def logging_in():
     print('response: ' + str(res.json()))
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
+        get_spotify_recently_played()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
+
+def get_spotify_recently_played():
+    # somewhat test to see what can get back from spotify api
+    access_token = session['spotify_access_token']
+    headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+    # get_params = {}
+    res = requests.get(url='https://api.spotify.com/v1/me/player/recently-played', headers= headers)
+    # print("Recently played response: " + str(res.text))
+    # TODO: handle at least two possible errors - empty response and user not added to dev dashboard?
+
+# TODO?
+def make_spotify_playlist_from_recommended():
+    pass
 
 def get_auth_tokens(response):
     session['spotify_access_token'] = response['access_token'] 

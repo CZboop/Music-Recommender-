@@ -416,7 +416,7 @@ def logging_in():
     print('response: ' + str(res.json()))
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
-        get_spotify_recently_played()
+        get_spotify_data()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
@@ -433,6 +433,42 @@ def get_spotify_recently_played():
 # TODO?
 def make_spotify_playlist_from_recommended():
     pass
+    # find the artist spotify version...
+    # create playlist and populate with 
+
+def get_spotify_data():
+    # TODO:
+    # broader func to pull together other spotify related ones
+    get_spotify_top()
+    get_spotify_recently_played()
+
+def get_spotify_top():
+    # these can be rated higher than the generally followed
+    # TODO: refresh token if needed before any request?
+    access_token = session['spotify_access_token']
+    headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
+    # get_params = {}
+    res = requests.get(url='https://api.spotify.com/v1/me/top/artists', headers= headers)
+    print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
+    top_artists = [i['name'] for i in res.json()['items']]
+    # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
+    # or anyway handle trying to add rating info when not logged in
+    # add_ratings_for_spotify_artists(top_artists)
+
+def add_ratings_for_spotify_artists(artists, top=True, rating=10):
+    for artists in artists:
+        pass
+
+def find_artist_from_spotify(artist_name):
+    # using search endpoint to find artist by name
+    pass
+
+def get_spotify_followed_artists():
+    pass
+
+def get_top_songs_for_artist(artist):
+    pass
+    # use spotify to recommend some specific songs for the artist recommended
 
 def get_auth_tokens(response):
     session['spotify_access_token'] = response['access_token'] 

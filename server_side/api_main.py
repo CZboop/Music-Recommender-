@@ -128,12 +128,7 @@ def welcome():
             
             # return jsonify({'numRated' : len(get_artists_rated(user_id))})
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('SELECT * FROM artists;')
-        artists = cur.fetchall()
-        cur.close()
-        conn.close()
+        artists = get_all_artists()
 
         num_rated = len(get_artists_rated(user_id))
 
@@ -215,12 +210,8 @@ def rate_artist():
 
             return redirect(url_for('success', artist = artist_name, rating = rating, updated = updated))
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM artists;')
-    artists = cur.fetchall()
-    cur.close()
-    conn.close()
+    artists = get_all_artists()
+
     return render_template('rate_artist.html', artists=artists, logged_in=logged_in)
 
 # checking if user already rated an artist to update rather than just re-add rating
@@ -447,21 +438,68 @@ def get_spotify_top():
     # TODO: refresh token if needed before any request?
     access_token = session['spotify_access_token']
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
-    # get_params = {}
+    
     res = requests.get(url='https://api.spotify.com/v1/me/top/artists', headers= headers)
     print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
     top_artists = [i['name'] for i in res.json()['items']]
     # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
     # or anyway handle trying to add rating info when not logged in
-    # add_ratings_for_spotify_artists(top_artists)
+    add_ratings_for_spotify_artists(top_artists)
 
 def add_ratings_for_spotify_artists(artists, top=True, rating=10):
-    for artists in artists:
-        pass
+    # TODO: if else for rating depending on top or not
+    for artist in artists:
+        # print(artist)
+        find_or_add_artist_from_spotify(artist)
+        # TODO: switch to use the actual route with all the other logic
+        artist_id = get_artist_id_from_name(artist)
+        
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
 
-def find_artist_from_spotify(artist_name):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+
+# finding artist from spotify in our database
+def find_or_add_artist_from_spotify(artist_name):
+    current_artists = get_all_artists()
+    if artist_name.lower() in [i[1].lower() for i in current_artists]:
+        return True
+    else:
+        # add as a new artist 
+        # TODO: switch to use the endpoint with authentication etc
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO artists (name) VALUES ('{artist_name}');")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return False
+    # TODO: add artists to db if not there already
+
+def get_all_artists():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM artists;')
+    artists = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    return artists
+
+# getting spotify artist id and info - eg for finding top songs/some songs from spotify
+def find_artist_in_spotify(artist_name):
     # using search endpoint to find artist by name
-    pass
+    # note, this for 
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    
+    res = requests.get(url='https://api.spotify.com/v1/search?type=artist', headers= headers)
+    print(f'Artist Search Response: {res.json()}')
 
 def get_spotify_followed_artists():
     pass

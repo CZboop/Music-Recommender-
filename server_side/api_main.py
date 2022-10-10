@@ -17,6 +17,7 @@ import string
 import requests
 import base64
 from config_secrets import APP_ID, APP_SECRET
+import time
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -310,7 +311,7 @@ def get_user_from_name(name):
 def get_artist_id_from_name(name):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute(f"SELECT auto_id FROM artists WHERE name = '{name}';")
+    cur.execute(f"SELECT auto_id FROM artists WHERE name ILIKE '{name}';")
     artist_id = cur.fetchall()
     cur.close()
     conn.close()
@@ -408,6 +409,7 @@ def logging_in():
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
         get_spotify_data()
+        add_spotify_ids()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
@@ -439,9 +441,10 @@ def get_spotify_top():
     access_token = session['spotify_access_token']
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
     
-    res = requests.get(url='https://api.spotify.com/v1/me/top/artists', headers= headers)
+    res = requests.get(url='https://api.spotify.com/v1/me/top/artists?limit=50', headers= headers)
     print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
     top_artists = [i['name'] for i in res.json()['items']]
+    find_artist_in_spotify(top_artists[0])
     # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
     # or anyway handle trying to add rating info when not logged in
     add_ratings_for_spotify_artists(top_artists)
@@ -452,8 +455,8 @@ def add_ratings_for_spotify_artists(artists, top=True, rating=10):
         # print(artist)
         find_or_add_artist_from_spotify(artist)
         # TODO: switch to use the actual route with all the other logic
-        artist_id = get_artist_id_from_name(artist)
-        
+        artist_id = get_artist_id_from_name(artist.replace("'","''"))
+
         username = get_username_from_token()
         user_id = get_user_from_name(username)
 
@@ -464,7 +467,6 @@ def add_ratings_for_spotify_artists(artists, top=True, rating=10):
         cur.close()
         conn.close()
 
-
 # finding artist from spotify in our database
 def find_or_add_artist_from_spotify(artist_name):
     current_artists = get_all_artists()
@@ -473,14 +475,14 @@ def find_or_add_artist_from_spotify(artist_name):
     else:
         # add as a new artist 
         # TODO: switch to use the endpoint with authentication etc
+        artist_escaped = artist_name.replace("'","''")
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute(f"INSERT INTO artists (name) VALUES ('{artist_name}');")
+        cur.execute(f"INSERT INTO artists (name) VALUES ('{artist_escaped}');")
         conn.commit()
         cur.close()
         conn.close()
         return False
-    # TODO: add artists to db if not there already
 
 def get_all_artists():
     conn = get_db_connection()
@@ -498,8 +500,57 @@ def find_artist_in_spotify(artist_name):
     # note, this for 
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     
-    res = requests.get(url='https://api.spotify.com/v1/search?type=artist', headers= headers)
-    print(f'Artist Search Response: {res.json()}')
+    res = requests.get(url=f'https://api.spotify.com/v1/search?type=artist&q={artist_name}', headers= headers)
+    # print(f"Artist Search Response: {res.json()['artists']['items'][0]['id']}")
+    # TODO: will be using this method to add for existing last fm dataset artists who may not all be on spotify, handle this
+    if res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip().lower() != artist_name.translate(str.maketrans('', '', string.punctuation)).strip().lower():
+        print(f'{artist_name} not found')
+        print(res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip())
+        return None
+    return res.json()['artists']['items'][0]['id']
+
+# getting all artist names from db to get ids for
+def get_artist_names():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM artists;")
+    artist_resultset = cur.fetchall()
+    artist_names = [artist[0] for artist in artist_resultset]
+    cur.close()
+    conn.close()
+    return artist_names
+
+# getting spotify ids
+def get_all_artist_ids(artist_names):
+    # artist_ids = {}
+    for index, name in enumerate(artist_names):
+        print(index)
+        if index % 20 == 15:
+            time.sleep(60)
+        try:
+            id = find_artist_in_spotify(name)
+            # artist_ids[name] = id if id != None else 'NULL'
+            add_artist_id_to_db(id, name)
+        except:
+            print(f'Error with artist: {name}')
+            # seems auth expiring, refresh...
+            refresh_spotify_token()
+
+    return artist_ids
+
+def add_artist_id_to_db(artist_id, artist_name):
+    # for key in artist_ids:
+    artist_name = artist_name.replace("'","''")
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"UPDATE artists SET spotify_id = '{artist_id}' WHERE name = '{artist_name}';")
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def add_spotify_ids():
+    ids = get_all_artist_ids(get_artist_names())
+    # add_artist_id_to_db(ids)
 
 def get_spotify_followed_artists():
     pass
@@ -507,6 +558,9 @@ def get_spotify_followed_artists():
 def get_top_songs_for_artist(artist):
     pass
     # use spotify to recommend some specific songs for the artist recommended
+
+def save_recs_as_spotify_playlist():
+    pass
 
 def get_auth_tokens(response):
     session['spotify_access_token'] = response['access_token'] 

@@ -529,7 +529,7 @@ def get_all_artist_ids(artist_names):
         except:
             print(f'Error with artist: {name}')
             # seems auth expiring, refresh...
-            refresh_spotify_token()
+            refresh = refresh_spotify_token()
 
     return artist_ids
 
@@ -612,6 +612,7 @@ def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(date.toda
         track_selection = random.sample(tracks, random.randrange(1,4))
     # - add each selected track to the playlist (separate func)
     add_track_to_spotify_playlist(new_playlist_id, tracks_for_playlist)
+    # TODO: explicitly handle artists not in spotify?
 
 def add_track_to_spotify_playlist(playlist_id, track_ids):
     # can add up to 100/ a lot of tracks at once, better to limit requests but can do list with one if want...
@@ -641,7 +642,14 @@ def refresh_spotify_token():
     post_params = {'grant_type': 'refresh_token',"client_id": APP_ID,
         "client_secret": APP_SECRET}
     res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
-    # TODO: refresh token when needed...
+    
+    new_access_token = res.json()['access_token']
+    session['spotify_access_token'] = new_access_token
+    
+    # doesn't always send back a new refresh token?
+    if 'refresh_token' in res.json():
+        new_refresh_token = res.json()['refresh_token']
+        session['spotify_refresh_token'] = new_refresh_token
 
 @app.route('/recommend', methods=['POST'])
 def recommend():

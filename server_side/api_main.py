@@ -423,12 +423,6 @@ def get_spotify_recently_played():
     # print("Recently played response: " + str(res.text))
     # TODO: handle at least two possible errors - empty response and user not added to dev dashboard?
 
-# TODO?
-def make_spotify_playlist_from_recommended():
-    pass
-    # find the artist spotify version...
-    # create playlist and populate with 
-
 def get_spotify_data():
     # TODO:
     # broader func to pull together other spotify related ones
@@ -523,6 +517,7 @@ def get_artist_names():
 # getting spotify ids
 def get_all_artist_ids(artist_names):
     # artist_ids = {}
+    # [1095:]
     for index, name in enumerate(artist_names):
         print(index)
         if index % 20 == 15:
@@ -553,14 +548,89 @@ def add_spotify_ids():
     # add_artist_id_to_db(ids)
 
 def get_spotify_followed_artists():
-    pass
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    
+    res = requests.get(url='https://api.spotify.com/v1/me/following?type=artist&limit=50', headers= headers)
 
-def get_top_songs_for_artist(artist):
-    pass
-    # use spotify to recommend some specific songs for the artist recommended
+    followed_artists = [item['name'] for item in res.json()['artists']['items']]
 
-def save_recs_as_spotify_playlist():
-    pass
+    for artist in followed_artists:
+        # TODO: skip if already rated
+        find_or_add_artist_from_spotify(artist)
+        # TODO: switch to use the actual route with all the other logic
+        artist_id = get_artist_id_from_name(artist.replace("'","''"))
+
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    return True
+
+def get_top_songs_for_artist(artist_id):
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    
+    res = requests.get(url=f'https://api.spotify.com/v1/artists/{artist_id}/top-tracks', headers= headers)
+
+    top_tracks = [(track['name'], track['id']) for track in res.json()['tracks']]
+
+    return top_tracks
+    # TODO: turn into a little widget with some specific songs for the artist recommended
+
+# TODO: ask user if want to save, and ask for user submitted name? with default tho
+def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(date.today())}'):
+    # 
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    post_params = {
+        "name": name,
+        "description": "Playlist generated from recommendations",
+        "public": false
+    }
+
+    if not session['spotify_user_id']:
+        get_user_spotify_id()
+
+    res = requests.post(url=f'https://api.spotify.com/v1/users/{session['spotify_user_id']}/playlists', headers= headers, data= post_params)
+    new_playlist_id = res.json()['id']
+
+    #TODO: add tracks 
+    # - get spotify id for each artist
+    rec_spotify_ids = []
+    for artist in recs:
+        id = find_artist_in_spotify(artist)
+        recs_spotify_ids.append(id)
+    # - get top tracks from each artist id
+    # - select a few out of those top tracks, not sure how many will be in response...
+    tracks_for_playlist = []
+    for id in rec_spotify_ids:
+        tracks = get_top_songs_for_artist(id)
+        track_selection = random.sample(tracks, random.randrange(1,4))
+    # - add each selected track to the playlist (separate func)
+    add_track_to_spotify_playlist(new_playlist_id, tracks_for_playlist)
+
+def add_track_to_spotify_playlist(playlist_id, track_ids):
+    # can add up to 100/ a lot of tracks at once, better to limit requests but can do list with one if want...
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    post_params = {
+        "uris" : [*track_ids]
+    }
+
+    res = requests.post(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers= headers, data= post_params)
+    new_playlist_id = res.json()['id']
+
+def get_user_spotify_id():
+    headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
+    res = requests.get(url=f'https://api.spotify.com/v1/me', headers= headers)
+
+    spotify_user_id = res.json()['id']
+    session['spotify_user_id'] = spotify_user_id
+
+    return spotify_user_id
 
 def get_auth_tokens(response):
     session['spotify_access_token'] = response['access_token'] 

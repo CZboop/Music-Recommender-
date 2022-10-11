@@ -583,7 +583,7 @@ def get_top_songs_for_artist(artist_id):
     # TODO: turn into a little widget with some specific songs for the artist recommended
 
 # TODO: ask user if want to save, and ask for user submitted name? with default tho
-def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(date.today())}'):
+def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(dt.date.today())}'):
     # 
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     post_params = {
@@ -594,8 +594,8 @@ def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(date.toda
 
     if not session['spotify_user_id']:
         get_user_spotify_id()
-
-    res = requests.post(url=f'https://api.spotify.com/v1/users/{session['spotify_user_id']}/playlists', headers= headers, data= post_params)
+    spotify_user_id = session['spotify_user_id']
+    res = requests.post(url=f'https://api.spotify.com/v1/users/{spotify_user_id}/playlists', headers= headers, data= post_params)
     new_playlist_id = res.json()['id']
 
     #TODO: add tracks 

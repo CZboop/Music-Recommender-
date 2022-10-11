@@ -379,7 +379,7 @@ def portal():
         'response_type' : 'code',
         'redirect_uri' : 'http://127.0.0.1:5000/logging-in',
         'scope' : """user-library-modify user-library-read user-top-read user-read-recently-played playlist-read-private
-        playlist-read-collaborative playlist-modify-private playlist-modify-public""",
+        playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-read""",
         'state_key' : ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
 
     }
@@ -428,6 +428,7 @@ def get_spotify_data():
     # broader func to pull together other spotify related ones
     get_spotify_top()
     get_spotify_recently_played()
+    get_spotify_followed_artists()
 
 def get_spotify_top():
     # these can be rated higher than the generally followed
@@ -464,7 +465,11 @@ def add_ratings_for_spotify_artists(artists, top=True, rating=10):
 # finding artist from spotify in our database
 def find_or_add_artist_from_spotify(artist_name):
     current_artists = get_all_artists()
-    if artist_name.lower() in [i[1].lower() for i in current_artists]:
+    # print(current_artists[0])
+    current_artists = [i[1] for i in current_artists]
+    current_artists = [i.lower() for i in current_artists]
+    
+    if artist_name.lower() in current_artists:
         return True
     else:
         # add as a new artist 
@@ -551,24 +556,23 @@ def get_spotify_followed_artists():
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     
     res = requests.get(url='https://api.spotify.com/v1/me/following?type=artist&limit=50', headers= headers)
+    print(str(res.json()))
 
     followed_artists = [item['name'] for item in res.json()['artists']['items']]
+    print(followed_artists[0])
 
+    artist_ids = []
     for artist in followed_artists:
         # TODO: skip if already rated
         find_or_add_artist_from_spotify(artist)
         # TODO: switch to use the actual route with all the other logic
-        artist_id = get_artist_id_from_name(artist.replace("'","''"))
+        # artist_id = get_artist_id_from_name(artist.replace("'","''"))
+        # artist_ids.append(artist_id)
 
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
+    # username = get_username_from_token()
+    # user_id = get_user_from_name(username)
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-        conn.commit()
-        cur.close()
-        conn.close()
+    add_ratings_for_spotify_artists(followed_artists, rating=5)
 
     return True
 

@@ -1,12 +1,16 @@
 {% extends 'boilerplate.html' %}
 
-{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}">{% endblock %}
+{% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}"><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/logging_in.css') }}">{% endblock %}
 
 {% block content %}
     <h1>{% block title %}Logged In {% endblock %}</h1>
-    {% if success == True %}
-    <p>Logged in successfully!?</p>
-    {% else %}
-    <p>Something went wrong...</p>
-    {% endif %}
+    <div class="logged-in">
+        {% if success == True %}
+        <p>Spotify data added successfully!?</p>
+        {% else %}
+        <p>Something went wrong when adding Spotify data</p>
+        {% endif %}
+    </div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="{{ url_for('static',filename='addSpotifyInfo.js') }}"></script>
 {% endblock %}

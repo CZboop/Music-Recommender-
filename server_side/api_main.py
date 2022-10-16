@@ -408,8 +408,8 @@ def logging_in():
     print('response: ' + str(res.json()))
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
-        get_spotify_data()
-        add_spotify_ids()
+        # get_spotify_data()
+        # add_spotify_ids()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
@@ -423,12 +423,16 @@ def get_spotify_recently_played():
     # print("Recently played response: " + str(res.text))
     # TODO: handle at least two possible errors - empty response and user not added to dev dashboard?
 
+@app.route('/add-spotify-info', methods = ['GET', 'POST'])
 def get_spotify_data():
+    print('adding data...')
     # TODO:
     # broader func to pull together other spotify related ones
     get_spotify_top()
     get_spotify_recently_played()
     get_spotify_followed_artists()
+    
+    return jsonify({'data': 'placeholder'})
 
 def get_spotify_top():
     # these can be rated higher than the generally followed

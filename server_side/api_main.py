@@ -86,13 +86,7 @@ def get_highest_user_id():
 
 @app.route('/welcome', methods=('GET', 'POST'))
 def welcome():
-    was_signed_in, is_valid = is_token_valid()
-
-    if not is_valid:
-        if was_signed_in:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
-        else:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+    check_token_handle_result()
 
     logged_in = False
     if 'user' in session:
@@ -139,30 +133,29 @@ def welcome():
 def success():
     return render_template('rating_success.html', artist = request.args.get('artist'), rating = request.args.get('rating'), updated = str(request.args.get('updated')))
 
+# note currently check for duplicates in method that adds, and the route is exposed, may want to remove and just have as func
+def add_new_artist(name):
+    name_escaped = name.replace("'", "''")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO artists (name) VALUES ('{name_escaped}');")
+    conn.commit()
+    cur.close()
+    conn.close()
+
 @app.route('/add-artist/', methods=('GET', 'POST'))
 def add_artist():
-    was_signed_in, is_valid = is_token_valid()
-
-    if not is_valid:
-        if was_signed_in:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
-        else:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+    check_token_handle_result()
 
     if request.method == 'POST':
         name = request.form['name']
-        name_escaped = name.replace("'","''")
 
         if not is_token_valid():
             return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO artists (name) VALUES ('{name_escaped}');")
-        conn.commit()
-        cur.close()
-        conn.close()
-
+        add_new_artist(name)
+        
         return redirect(url_for('home'))
 
     return render_template('add_artist.html')
@@ -340,14 +333,8 @@ def get_artists_rated(user_id):
 
 @app.route('/recommendations', methods=['POST', 'GET'])
 def recommendations():
-    was_signed_in, is_valid = is_token_valid()
-
-    if not is_valid:
-        if was_signed_in:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
-        else:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
-
+    check_token_handle_result()
+    
     logged_in = False
     recs = None
 
@@ -406,6 +393,8 @@ def portal():
 
 @app.route('/logging-in')
 def logging_in():
+    check_token_handle_result()
+    
     code = request.args.get("code")
     # TODO: handle user rejecting access, will have different response in query params (error instead of code?)
     # TODO: check state in response is the same as what we sent and reject if doesn't match
@@ -480,14 +469,7 @@ def find_or_add_artist_from_spotify(artist_name):
         return True
     else:
         # add as a new artist 
-        # TODO: switch to use the endpoint with authentication etc
-        artist_escaped = artist_name.replace("'","''")
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO artists (name) VALUES ('{artist_escaped}');")
-        conn.commit()
-        cur.close()
-        conn.close()
+        add_new_artist(artist_name)
         return False
 
 def get_all_artists():

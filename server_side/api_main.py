@@ -579,7 +579,7 @@ def get_spotify_followed_artists():
     # username = get_username_from_token()
     # user_id = get_user_from_name(username)
 
-    add_ratings_for_spotify_artists(followed_artists, rating=5)
+    add_ratings_for_spotify_artists(followed_artists, top= False, rating= 5)
 
     return True
 

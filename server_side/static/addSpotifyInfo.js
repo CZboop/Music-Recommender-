@@ -10,8 +10,8 @@ $(function (){
               
             },
             complete: function(data){
+                $('.import-loading').hide();
                 $('.logged-in').show();
-                console.log('hello?')
         }
           })
         }

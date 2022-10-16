@@ -3,7 +3,7 @@
 {% block stylesheet %}<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/boilerplate.css') }}"><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/logging_in.css') }}">{% endblock %}
 
 {% block content %}
-    <h1>{% block title %}Logged In {% endblock %}</h1>
+    <h1>{% block title %}Importing Spotify {% endblock %}</h1>
     <div class="logged-in">
         {% if success == True %}
         <p>Spotify data added successfully!?</p>
@@ -11,6 +11,16 @@
         <p>Something went wrong when adding Spotify data</p>
         {% endif %}
     </div>
+
+<div class="import-loading">
+    <div class='loading-bar'>
+        <div class='loading-fill'></div>
+    </div>
+    <p class="loading-text">IMPORTING SPOTIFY DATA...</p>
+</div>
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="{{ url_for('static',filename='addSpotifyInfo.js') }}"></script>
+
+<script src="{{ url_for('static',filename='importing.js') }}"></script>
 {% endblock %}

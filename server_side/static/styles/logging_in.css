@@ -1,3 +1,40 @@
 .logged-in {
     display: none;
 }
+
+.loading-bar {
+    width: 98%;
+    height: 2em;
+    background-color: rgb(233, 233, 243);
+    border-radius: 1em;
+    border: 1px solid red;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+  }
+
+  @keyframes loading {
+    from {width: 0%;}
+    to {width: 100%;}
+  }
+  
+  .loading-fill {
+    /* width: 0%; */
+    height: 100%;
+    background: white;
+      /* background: repeating-linear-gradient(
+    -55deg,
+    red,
+    red 1px,
+    white 1px,
+    white 15px
+  ); */
+    border-radius: 1em;
+    animation: loading 5s infinite;
+  }
+
+  .loading-text{
+    margin-left: auto;
+    margin-right: auto;
+  }

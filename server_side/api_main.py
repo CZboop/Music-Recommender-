@@ -151,13 +151,14 @@ def add_artist():
 
     if request.method == 'POST':
         name = request.form['name']
+        name_escaped = name.replace("'","''")
 
         if not is_token_valid():
             return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute(f"INSERT INTO artists (name) VALUES ('{name}');")
+        cur.execute(f"INSERT INTO artists (name) VALUES ('{name_escaped}');")
         conn.commit()
         cur.close()
         conn.close()
@@ -166,8 +167,32 @@ def add_artist():
 
     return render_template('add_artist.html')
 
-@app.route('/rate-artist/', methods=('GET', 'POST'))
-def rate_artist():
+def rating_artist(artist_name, user_id, rating):
+    artist_id = get_artist_id_from_name(artist_name)
+    
+    updated = False
+    if is_artist_rated(artist_name) == True:
+        # updating if user has already rated artist before
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
+        conn.commit()
+        cur.close()
+        conn.close()
+        updated = True
+
+    else:
+        # else adding in new rating row
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    return updated
+
+def check_token_handle_result():
     was_signed_in, is_valid = is_token_valid()
 
     if not is_valid:
@@ -176,38 +201,23 @@ def rate_artist():
         else:
             return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
 
+@app.route('/rate-artist/', methods=('GET', 'POST'))
+def rate_artist():
+    check_token_handle_result()
+
     logged_in = False
     if 'user' in session:
         logged_in = True
         if request.method == 'POST':
-            username = get_username_from_token()
-            user_id = get_user_from_name(username)
-            artist_name = request.form['artist']
-            artist_id = get_artist_id_from_name(artist_name)
-            rating = request.form['rating']
-
             if not is_token_valid():
                 return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
-            updated = False
-            if is_artist_rated(artist_name) == True:
-                # updating if user has already rated artist before
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
-                conn.commit()
-                cur.close()
-                conn.close()
-                updated = True
+            username = get_username_from_token()
+            user_id = get_user_from_name(username)
+            artist_name = request.form['artist']
+            rating = request.form['rating']
 
-            else:
-                # else adding in new rating row
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-                conn.commit()
-                cur.close()
-                conn.close()
+            updated = rating_artist(artist_name, user_id, rating)
 
             return redirect(url_for('success', artist = artist_name, rating = rating, updated = updated))
 
@@ -309,6 +319,8 @@ def get_user_from_name(name):
     return user_query_res[0][0]
 
 def get_artist_id_from_name(name):
+    name = name.replace("'", "''")
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(f"SELECT auto_id FROM artists WHERE name ILIKE '{name}';")
@@ -453,18 +465,9 @@ def add_ratings_for_spotify_artists(artists, top=True, rating=10):
     for artist in artists:
         # print(artist)
         find_or_add_artist_from_spotify(artist)
-        # TODO: switch to use the actual route with all the other logic
-        artist_id = get_artist_id_from_name(artist.replace("'","''"))
-
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-        conn.commit()
-        cur.close()
-        conn.close()
+        check_token_handle_result()
+        rating_artist(artist, get_user_from_name(get_username_from_token()), rating)
+        print(f"Rated: {artist}")
 
 # finding artist from spotify in our database
 def find_or_add_artist_from_spotify(artist_name):

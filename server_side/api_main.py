@@ -28,7 +28,6 @@ app.config['SECRET_KEY'] = secret
 
 @app.route('/sign-up/', methods=('GET', 'POST'))
 def sign_up():
-    #TODO: add a message/ different page for any logged in user who gets here
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -190,7 +189,7 @@ def check_token_handle_result():
 
     if not is_valid:
         if was_signed_in:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
         else:
             return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
 
@@ -248,7 +247,7 @@ def get_db_connection():
 @app.route('/')
 def home():
     # TODO:
-    # flesh out different homepage if logged in or not
+    # flesh out homepage keeping difference for logged in/out
     num_rated = 0
     message = "Welcome!"
     logged_in = False
@@ -261,14 +260,12 @@ def home():
     return render_template('home.html', welcome_message=message, num_rated=num_rated, logged_in=logged_in, username=username)
 
 def get_username_from_token():
-    # TODO: check user exists in session
     token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
     username = token_decode['username']
     return username
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
-    #TODO: add treatment for user getting here while already logged in
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -366,13 +363,20 @@ def recommendations():
 
 @app.route('/update-rated', methods=['POST'])
 def update_rated():
-    username = get_username_from_token()
-    user_id = get_user_from_name(username)
-    return jsonify({'num_rated': len(get_artists_rated(user_id))})#
+    check_token_handle_result()
+
+    if 'user' in session:
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
+        return jsonify({'num_rated': len(get_artists_rated(user_id))})
+    else:
+        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 # portal to log in via spotify
 @app.route('/portal', methods=['GET', 'POST'])
 def portal():
+    check_token_handle_result()
+
     query_data = {
         'client_id' : APP_ID,
         'response_type' : 'code',
@@ -394,14 +398,12 @@ def portal():
 @app.route('/logging-in')
 def logging_in():
     check_token_handle_result()
-    
+
     code = request.args.get("code")
     # TODO: handle user rejecting access, will have different response in query params (error instead of code?)
     # TODO: check state in response is the same as what we sent and reject if doesn't match
-    encoded = base64.urlsafe_b64encode((APP_ID + ':' + APP_SECRET).encode())
 
-    authorization = f'Authorization: Basic {encoded}'
-    # ^base64 encoded combo of client id and secret format: Authorization: Basic <base64 encoded client_id:client_secret>
+    # client id and app secret can be given as combined base64 but can also as below as explicit separate params
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     post_params = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': 'http://127.0.0.1:5000/logging-in',"client_id": APP_ID,
         "client_secret": APP_SECRET}
@@ -419,10 +421,8 @@ def get_spotify_recently_played():
     # somewhat test to see what can get back from spotify api
     access_token = session['spotify_access_token']
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
-    # get_params = {}
     res = requests.get(url='https://api.spotify.com/v1/me/player/recently-played', headers= headers)
-    # print("Recently played response: " + str(res.text))
-    # TODO: handle at least two possible errors - empty response and user not added to dev dashboard?
+    # TODO: handle at least two possible errors - empty response and user not added to dev dashboard? (flash messages?)
 
 @app.route('/add-spotify-info', methods = ['GET', 'POST'])
 def get_spotify_data():
@@ -451,12 +451,16 @@ def get_spotify_top():
 
 def add_ratings_for_spotify_artists(artists, top=True, rating=10):
     # TODO: if else for rating depending on top or not
-    for artist in artists:
-        # print(artist)
-        find_or_add_artist_from_spotify(artist)
-        check_token_handle_result()
-        rating_artist(artist, get_user_from_name(get_username_from_token()), rating)
-        print(f"Rated: {artist}")
+    check_token_handle_result()
+    if 'user' in session:
+        for artist in artists:
+            # print(artist)
+            find_or_add_artist_from_spotify(artist)
+            check_token_handle_result()
+            rating_artist(artist, get_user_from_name(get_username_from_token()), rating)
+            print(f"Rated: {artist}")
+        return True
+    return False
 
 # finding artist from spotify in our database
 def find_or_add_artist_from_spotify(artist_name):
@@ -555,11 +559,6 @@ def get_spotify_followed_artists():
         # TODO: skip if already rated
         find_or_add_artist_from_spotify(artist)
         # TODO: switch to use the actual route with all the other logic
-        # artist_id = get_artist_id_from_name(artist.replace("'","''"))
-        # artist_ids.append(artist_id)
-
-    # username = get_username_from_token()
-    # user_id = get_user_from_name(username)
 
     add_ratings_for_spotify_artists(followed_artists, top= False, rating= 5)
 
@@ -568,7 +567,8 @@ def get_spotify_followed_artists():
 def get_top_songs_for_artist(artist_id):
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     
-    res = requests.get(url=f'https://api.spotify.com/v1/artists/{artist_id}/top-tracks', headers= headers)
+    res = requests.get(url=f'https://api.spotify.com/v1/artists/{artist_id}/top-tracks?market=GB', headers= headers)
+    print(res.json())
 
     top_tracks = [(track['name'], track['id']) for track in res.json()['tracks']]
 
@@ -646,38 +646,51 @@ def refresh_spotify_token():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
+    check_token_handle_result()
+
     # TODO: potential edge case where token expires?
-    username = get_username_from_token()
-    userid = get_user_from_name(username)
+    if 'user' in session:
+        username = get_username_from_token()
+        userid = get_user_from_name(username)
 
-    # returning if not rated many artists with just a message to rate more
-    num_rated = len(get_artists_rated(userid))
+        # returning if not rated many artists with just a message to rate more
+        num_rated = len(get_artists_rated(userid))
 
-    recommender = Recommender()
-    recs = recommender.recommend_subset(recommender.single_user_subset(userid), 15)
-    recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+        recommender = Recommender()
+        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 25)
+        recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+        print(recs_)
 
-    # getting just artist id using many string slices
-    rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+        # getting just artist id using many string slices
+        rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
 
-    past_recs = get_past_recs(userid)
-    past_rec_names = [get_artists_name_from_id(i[0]) for i in past_recs]
-    past_rec_ids = [i[0] for i in past_recs]
+        past_recs = get_past_recs(userid)
+        past_rec_names = [get_artists_name_from_id(i[0]) for i in past_recs]
+        past_rec_ids = [i[0] for i in past_recs]
 
-    # filtering out artists that have already been recommended before adding to db
-    new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
-    new_artist_links = [get_artist_link_from_id(i) for i in new_artist_ids]
+        # filtering out artists that have already been recommended before adding to db
+        new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
+        new_artist_links = [get_artist_link_from_id(i) for i in new_artist_ids]
 
-    past_rec_links = [get_artist_link_from_id(i) for i in past_rec_ids]
+        past_rec_links = [get_artist_link_from_id(i) for i in past_rec_ids]
 
-    store_recommendation(userid , new_artist_ids)
+        store_recommendation(userid , new_artist_ids)
 
-    rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
+        rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
 
-    rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
-    past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
+        rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
+        past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
 
-    return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links})
+        # print(past_rec_names[0]) 
+        #TODO: logic to only do if logged in to spotify, and to use this in recommendation, 
+        # and what to do if not found on spotify
+        #
+        print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
+        
+
+        return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links})
+
+    return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 def is_token_valid():
     # returns two booleans, first is whether user had ever signed in, second is whether valid

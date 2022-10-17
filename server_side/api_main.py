@@ -432,6 +432,7 @@ def get_spotify_data():
     get_spotify_top()
     get_spotify_recently_played()
     get_spotify_followed_artists()
+    get_user_spotify_id()
     
     return jsonify({'data': 'placeholder'})
 
@@ -568,10 +569,10 @@ def get_top_songs_for_artist(artist_id):
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     
     res = requests.get(url=f'https://api.spotify.com/v1/artists/{artist_id}/top-tracks?market=GB', headers= headers)
-    print(res.json())
+    # print(res.json())
 
-    top_tracks = [(track['name'], track['id']) for track in res.json()['tracks']]
-
+    top_tracks = [(str(track['name']), str(track['id'])) for track in res.json()['tracks']]
+    print(top_tracks)
     return top_tracks
     # TODO: turn into a little widget with some specific songs for the artist recommended
 
@@ -659,7 +660,7 @@ def recommend():
         recommender = Recommender()
         recs = recommender.recommend_subset(recommender.single_user_subset(userid), 25)
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
-        print(recs_)
+        # print(recs_)
 
         # getting just artist id using many string slices
         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
@@ -685,10 +686,25 @@ def recommend():
         #TODO: logic to only do if logged in to spotify, and to use this in recommendation, 
         # and what to do if not found on spotify
         #
-        print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
+        # top_songs_dict = None
+        if 'spotify_user_id' in session:
+            top_songs = []
+            for artist_name in rec_names:
+                # TODO: maybe adjust/test properly to made sure not other errors than just artist not found/ better handle within func
+                try:
+                    spotify_id = find_artist_in_spotify(artist_name)
+                    top_songs_for_artist = get_top_songs_for_artist(spotify_id)
+                    print(top_songs_for_artist)
+                    top_songs.append(top_songs_for_artist)
+                    # TODO: make this json friendly
+                except:
+                    print(f'{artist_name} not found')
+                    top_songs.append([])
+            top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
+            print(f'TOP SONGS DICT : {top_songs_dict}')
+        # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
         
-
-        return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links})
+        return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})
 
     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 

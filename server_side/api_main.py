@@ -26,7 +26,7 @@ api = Api(app)
 secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
-@app.route('/sign-up/', methods=('GET', 'POST'))
+@app.route('/sign-up', methods=('GET', 'POST'))
 def sign_up():
     if request.method == 'POST':
         username = request.form['username']
@@ -127,6 +127,8 @@ def welcome():
         num_rated = len(get_artists_rated(user_id))
 
         return render_template('welcome.html', username = request.args.get('username'), artists = artists, num_rated = num_rated)
+    
+    return redirect(url_for('home'))
 
 @app.route('/success')
 def success():
@@ -143,7 +145,7 @@ def add_new_artist(name):
     cur.close()
     conn.close()
 
-@app.route('/add-artist/', methods=('GET', 'POST'))
+@app.route('/add-artist', methods=('GET', 'POST'))
 def add_artist():
     check_token_handle_result()
 
@@ -193,7 +195,7 @@ def check_token_handle_result():
         else:
             return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
 
-@app.route('/rate-artist/', methods=('GET', 'POST'))
+@app.route('/rate-artist', methods=('GET', 'POST'))
 def rate_artist():
     check_token_handle_result()
 
@@ -756,7 +758,7 @@ def get_artist_link_from_id(id):
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return render_template('404.html')
+    return render_template('404.html'), 404
 
 if __name__=="__main__":
     app.run(debug=True)

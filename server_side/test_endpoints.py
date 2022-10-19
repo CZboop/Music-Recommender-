@@ -1,7 +1,9 @@
 import unittest
 from api_main import app
 
-class TestRoutes(unittest.TestCase):
+class TestRouteStatuses(unittest.TestCase):
+
+    ### TESTING THE STATUS CODES FOR EACH ENDPOINT ###
 
     def test_home_gives_200_status(self):
         client = app.test_client(self)
@@ -102,8 +104,84 @@ class TestRoutes(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
 
+class TestRouteResponseTypes(unittest.TestCase):
+
+    ### TESTING CONTENT TYPE FOR EACH ROUTE ###
+
+    def test_home_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_404_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/bla')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_welcome_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/welcome')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_success_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/success')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_spotify_portal_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/portal')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_add_artist_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/add-artist')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_rate_artist_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/rate-artist')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_update_rated_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/update-rated')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    # recommend
+    def test_recommend_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/recommend')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+    # recommendations
+    def test_recommendations_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/recommendations')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+    
+    def test_sing_up_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/sign-up')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+    
+    def test_login_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/login')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+    
+    def test_logging_in_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/logging-in')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
+    def test_log_out_content_type(self):
+        client = app.test_client(self)
+        response = client.get('/log-out')
+        self.assertEqual(response.content_type, "text/html; charset=utf-8")
+
     # TODO: test remaining add-spotify-info route that needs to mock/ use session storage
     # TODO: test other methods for routes that have both get and post
+    # TODO: more granular tests similar to actual use, different responses depending on params and session
 
 if __name__ == "__main__":
     unittest.main()

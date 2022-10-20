@@ -18,6 +18,7 @@ import requests
 import base64
 from config_secrets import APP_ID, APP_SECRET
 import time
+from functools import wraps
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -25,6 +26,20 @@ api = Api(app)
 
 secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
+
+# TODO: fix potential issue with was logged in vs wasn't logic/ check how want to handle each possibility
+def authenticate(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        was_signed_in, is_valid = is_token_valid()
+        print(is_valid)
+        if is_valid != True:
+            if was_signed_in:
+                return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+            else:
+                return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+    return decorator
+
 
 @app.route('/sign-up', methods=('GET', 'POST'))
 def sign_up():
@@ -84,9 +99,8 @@ def get_highest_user_id():
     return int(id[0][0])
 
 @app.route('/welcome', methods=('GET', 'POST'))
+@authenticate
 def welcome():
-    check_token_handle_result()
-
     logged_in = False
     if 'user' in session:
         logged_in = True
@@ -146,15 +160,10 @@ def add_new_artist(name):
     conn.close()
 
 @app.route('/add-artist', methods=('GET', 'POST'))
+@authenticate
 def add_artist():
-    check_token_handle_result()
-
     if request.method == 'POST':
         name = request.form['name']
-
-        if not is_token_valid():
-            return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
-
         add_new_artist(name)
         
         return redirect(url_for('home'))
@@ -186,25 +195,13 @@ def rating_artist(artist_name, user_id, rating):
 
     return updated
 
-def check_token_handle_result():
-    was_signed_in, is_valid = is_token_valid()
-
-    if not is_valid:
-        if was_signed_in:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
-        else:
-            return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
-
 @app.route('/rate-artist', methods=('GET', 'POST'))
+@authenticate
 def rate_artist():
-    check_token_handle_result()
-
     logged_in = False
     if 'user' in session:
         logged_in = True
         if request.method == 'POST':
-            if not is_token_valid():
-                return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
             username = get_username_from_token()
             user_id = get_user_from_name(username)
@@ -282,12 +279,15 @@ def login():
             flash("Invalid login details")
         else:
             token = create_token(username)
-            json_token = jsonify({'token': token})
-            session['user'] = token
-            session['logged_in'] = True
+            store_token_user_info(token)
             return redirect(url_for('home'))
 
     return render_template('login.html')
+
+def store_token_user_info(token):
+    json_token = jsonify({'token': token})
+    session['user'] = token
+    session['logged_in'] = True
 
 def create_token(username):
     expiry_datetime = dt.datetime.utcnow() + dt.timedelta(hours=24)
@@ -331,9 +331,8 @@ def get_artists_rated(user_id):
     return ratings
 
 @app.route('/recommendations', methods=['POST', 'GET'])
-def recommendations():
-    check_token_handle_result()
-    
+@authenticate
+def recommendations():    
     logged_in = False
     recs = None
 
@@ -364,9 +363,8 @@ def recommendations():
         return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 @app.route('/update-rated', methods=['POST'])
+@authenticate
 def update_rated():
-    check_token_handle_result()
-
     if 'user' in session:
         username = get_username_from_token()
         user_id = get_user_from_name(username)
@@ -376,9 +374,8 @@ def update_rated():
 
 # portal to log in via spotify
 @app.route('/portal', methods=['GET', 'POST'])
+@authenticate
 def portal():
-    check_token_handle_result()
-
     query_data = {
         'client_id' : APP_ID,
         'response_type' : 'code',
@@ -386,7 +383,6 @@ def portal():
         'scope' : """user-library-modify user-library-read user-top-read user-read-recently-played playlist-read-private
         playlist-read-collaborative playlist-modify-private playlist-modify-public user-follow-read""",
         'state_key' : ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(10))
-
     }
 
     auth_url = 'https://accounts.spotify.com/authorize?'
@@ -398,9 +394,8 @@ def portal():
     # return render_template('portal.html')
 
 @app.route('/logging-in')
+@authenticate
 def logging_in():
-    check_token_handle_result()
-
     code = request.args.get("code")
     # TODO: handle user rejecting access, will have different response in query params (error instead of code?)
     # TODO: check state in response is the same as what we sent and reject if doesn't match
@@ -452,14 +447,13 @@ def get_spotify_top():
     # or anyway handle trying to add rating info when not logged in
     add_ratings_for_spotify_artists(top_artists)
 
+@authenticate
 def add_ratings_for_spotify_artists(artists, top=True, rating=10):
     # TODO: if else for rating depending on top or not
-    check_token_handle_result()
     if 'user' in session:
         for artist in artists:
             # print(artist)
             find_or_add_artist_from_spotify(artist)
-            check_token_handle_result()
             rating_artist(artist, get_user_from_name(get_username_from_token()), rating)
             print(f"Rated: {artist}")
         return True
@@ -648,9 +642,8 @@ def refresh_spotify_token():
         session['spotify_refresh_token'] = new_refresh_token
 
 @app.route('/recommend', methods=['POST'])
+@authenticate
 def recommend():
-    check_token_handle_result()
-
     # TODO: potential edge case where token expires?
     if 'user' in session:
         username = get_username_from_token()

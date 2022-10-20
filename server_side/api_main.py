@@ -27,7 +27,6 @@ api = Api(app)
 secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
-# TODO: fix potential issue with was logged in vs wasn't logic/ check how want to handle each possibility
 def authenticate(func):
     @wraps(func)
     def decorator(*args, **kwargs):
@@ -35,9 +34,11 @@ def authenticate(func):
         print(is_valid)
         if is_valid != True:
             if was_signed_in:
-                return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+                return render_template('token_expired.html', was_signed_in = was_signed_in, logged_out = True), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
             else:
                 return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
+        else:
+            return func()   
     return decorator
 
 
@@ -290,7 +291,7 @@ def store_token_user_info(token):
     session['logged_in'] = True
 
 def create_token(username):
-    expiry_datetime = dt.datetime.utcnow() + dt.timedelta(hours=24)
+    expiry_datetime = dt.datetime.utcnow() + dt.timedelta(minutes=1)
     return jwt.encode({'username': username, 'expires' : expiry_datetime.strftime("%m/%d/%Y, %H:%M:%S")}, app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
 @app.route('/log-out', methods=['GET'])

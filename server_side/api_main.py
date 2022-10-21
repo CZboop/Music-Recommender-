@@ -410,7 +410,7 @@ def logging_in():
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
         # get_spotify_data()
-        # add_spotify_ids()
+        add_spotify_ids()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
@@ -493,10 +493,15 @@ def find_artist_in_spotify(artist_name):
     res = requests.get(url=f'https://api.spotify.com/v1/search?type=artist&q={artist_name}', headers= headers)
     # print(f"Artist Search Response: {res.json()['artists']['items'][0]['id']}")
     # TODO: will be using this method to add for existing last fm dataset artists who may not all be on spotify, handle this
-    if res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip().lower() != artist_name.translate(str.maketrans('', '', string.punctuation)).strip().lower():
-        print(f'{artist_name} not found')
-        print(res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip())
-        return None
+    # print(res.json())
+    try:
+        if res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip().lower() != artist_name.translate(str.maketrans('', '', string.punctuation)).strip().lower():
+            print(f'{artist_name} not found')
+            print(res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip())
+            return None
+    except:
+        refresh_spotify_token()
+        self.find_artist_in_spotify(artist_name)
     return res.json()['artists']['items'][0]['id']
 
 # getting all artist names from db to get ids for
@@ -512,9 +517,9 @@ def get_artist_names():
 
 # getting spotify ids
 def get_all_artist_ids(artist_names):
-    # artist_ids = {}
+    artist_ids = {} #**COMMENT OUT/REMOVE
     # [1095:]
-    for index, name in enumerate(artist_names):
+    for index, name in enumerate(artist_names[1095:]):
         print(index)
         if index % 20 == 15:
             time.sleep(60)
@@ -525,6 +530,7 @@ def get_all_artist_ids(artist_names):
         except:
             print(f'Error with artist: {name}')
             # seems auth expiring, refresh...
+            # seems other errors can occur
             refresh = refresh_spotify_token()
 
     return artist_ids
@@ -630,10 +636,11 @@ def get_auth_tokens(response):
 
 def refresh_spotify_token():
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    post_params = {'grant_type': 'refresh_token',"client_id": APP_ID,
-        "client_secret": APP_SECRET}
+    post_params = {'grant_type': 'refresh_token','refresh_token': session['spotify_refresh_token'], 
+        'client_id': APP_ID, 'client_secret': APP_SECRET}
     res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
     
+    print(res.json())
     new_access_token = res.json()['access_token']
     session['spotify_access_token'] = new_access_token
     

@@ -19,6 +19,7 @@ import base64
 from config_secrets import APP_ID, APP_SECRET
 import time
 from functools import wraps
+from itertools import chain
 
 # creating flask app and api based on/of it
 app = Flask(__name__)
@@ -38,7 +39,7 @@ def authenticate(func):
             else:
                 return render_template('token_expired.html', was_signed_in = was_signed_in), {"Refresh": "7; url=http://127.0.0.1:5000/login"}
         else:
-            return func()   
+            return func(*args, **kwargs)   
     return decorator
 
 
@@ -112,8 +113,8 @@ def welcome():
             artist_id = get_artist_id_from_name(artist_name)
             rating = request.form['rating']
 
-            if not is_token_valid():
-                return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+            # if not is_token_valid():
+            #     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
             updated = False
             if is_artist_rated(artist_name) == True:
@@ -291,7 +292,7 @@ def store_token_user_info(token):
     session['logged_in'] = True
 
 def create_token(username):
-    expiry_datetime = dt.datetime.utcnow() + dt.timedelta(minutes=1)
+    expiry_datetime = dt.datetime.utcnow() + dt.timedelta(hours=24)
     return jwt.encode({'username': username, 'expires' : expiry_datetime.strftime("%m/%d/%Y, %H:%M:%S")}, app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
 @app.route('/log-out', methods=['GET'])
@@ -406,11 +407,11 @@ def logging_in():
     post_params = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': 'http://127.0.0.1:5000/logging-in',"client_id": APP_ID,
         "client_secret": APP_SECRET}
     res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
-    print('response: ' + str(res.json()))
+    # print('response: ' + str(res.json()))
     if res.status_code == 200:
         get_auth_tokens(json.loads(res.text))
-        # get_spotify_data()
-        add_spotify_ids()
+        get_spotify_data()
+        # add_spotify_ids()
         return render_template('logging_in.html', success = True)
     else:
         return render_template('logging_in.html', success = False)
@@ -441,7 +442,8 @@ def get_spotify_top():
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
     
     res = requests.get(url='https://api.spotify.com/v1/me/top/artists?limit=50', headers= headers)
-    print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
+    # print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
+    print("Got Top Artists")
     top_artists = [i['name'] for i in res.json()['items']]
     find_artist_in_spotify(top_artists[0])
     # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
@@ -493,7 +495,7 @@ def find_artist_in_spotify(artist_name):
     res = requests.get(url=f'https://api.spotify.com/v1/search?type=artist&q={artist_name}', headers= headers)
     # print(f"Artist Search Response: {res.json()['artists']['items'][0]['id']}")
     # TODO: will be using this method to add for existing last fm dataset artists who may not all be on spotify, handle this
-    # print(res.json())
+    print(res.json())
     try:
         if res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip().lower() != artist_name.translate(str.maketrans('', '', string.punctuation)).strip().lower():
             print(f'{artist_name} not found')
@@ -501,8 +503,12 @@ def find_artist_in_spotify(artist_name):
             return None
     except:
         refresh_spotify_token()
-        self.find_artist_in_spotify(artist_name)
-    return res.json()['artists']['items'][0]['id']
+        # find_artist_in_spotify(artist_name)
+    try:
+        return res.json()['artists']['items'][0]['id']
+    except:
+        print(res.json())
+        return None
 
 # getting all artist names from db to get ids for
 def get_artist_names():
@@ -553,7 +559,7 @@ def get_spotify_followed_artists():
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     
     res = requests.get(url='https://api.spotify.com/v1/me/following?type=artist&limit=50', headers= headers)
-    print(str(res.json()))
+    # print(str(res.json()))
 
     followed_artists = [item['name'] for item in res.json()['artists']['items']]
     print(followed_artists[0])
@@ -580,46 +586,50 @@ def get_top_songs_for_artist(artist_id):
     # TODO: turn into a little widget with some specific songs for the artist recommended
 
 # TODO: ask user if want to save, and ask for user submitted name? with default tho
-def save_recs_as_spotify_playlist(recs, name=f'recommenderPlaylist{str(dt.date.today())}'):
+def save_recs_as_spotify_playlist(recs, tracks, name=f'recommenderPlaylist{str(dt.date.today())}'):
     # 
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     post_params = {
         "name": name,
         "description": "Playlist generated from recommendations",
-        "public": false
+        "public": "false"
     }
 
     if not session['spotify_user_id']:
         get_user_spotify_id()
     spotify_user_id = session['spotify_user_id']
-    res = requests.post(url=f'https://api.spotify.com/v1/users/{spotify_user_id}/playlists', headers= headers, data= post_params)
+    res = requests.post(url=f'https://api.spotify.com/v1/users/{spotify_user_id}/playlists', headers= headers, data= json.dumps(post_params))
+    print(res.json())
     new_playlist_id = res.json()['id']
 
     #TODO: add tracks 
     # - get spotify id for each artist
-    rec_spotify_ids = []
-    for artist in recs:
-        id = find_artist_in_spotify(artist)
-        recs_spotify_ids.append(id)
-    # - get top tracks from each artist id
-    # - select a few out of those top tracks, not sure how many will be in response...
-    tracks_for_playlist = []
-    for id in rec_spotify_ids:
-        tracks = get_top_songs_for_artist(id)
-        track_selection = random.sample(tracks, random.randrange(1,4))
+    # rec_spotify_ids = []
+    # for artist in recs:
+    #     id = find_artist_in_spotify(artist)
+    #     rec_spotify_ids.append(id)
+    # # - get top tracks from each artist id
+    # # - select a few out of those top tracks, not sure how many will be in response...
+    # tracks_for_playlist = []
+    # for id in rec_spotify_ids:
+    #     tracks = get_top_songs_for_artist(id)
+    #     track_selection = random.sample(tracks, random.randrange(1,4))
     # - add each selected track to the playlist (separate func)
-    add_track_to_spotify_playlist(new_playlist_id, tracks_for_playlist)
+    add_tracks_to_spotify_playlist(new_playlist_id, tracks)
     # TODO: explicitly handle artists not in spotify?
 
-def add_track_to_spotify_playlist(playlist_id, track_ids):
+def add_tracks_to_spotify_playlist(playlist_id, track_ids):
     # can add up to 100/ a lot of tracks at once, better to limit requests but can do list with one if want...
+    uris = [f"spotify:track:{i[1]}" for i in track_ids]
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     post_params = {
-        "uris" : [*track_ids]
+        "uris" : uris
     }
 
-    res = requests.post(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers= headers, data= post_params)
-    new_playlist_id = res.json()['id']
+    res = requests.post(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers= headers, data= json.dumps(post_params))
+    # new_playlist_id = res.json()['id']
+    print(res.json())
+    print('added to playlist?')
 
 def get_user_spotify_id():
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
@@ -640,7 +650,7 @@ def refresh_spotify_token():
         'client_id': APP_ID, 'client_secret': APP_SECRET}
     res = requests.post(url='https://accounts.spotify.com/api/token', headers= headers, data=post_params)
     
-    print(res.json())
+    # print(res.json())
     new_access_token = res.json()['access_token']
     session['spotify_access_token'] = new_access_token
     
@@ -690,6 +700,7 @@ def recommend():
         # and what to do if not found on spotify
         #
         # top_songs_dict = None
+        top_songs = []
         if 'spotify_user_id' in session:
             top_songs = []
             for artist_name in rec_names:
@@ -704,7 +715,9 @@ def recommend():
                     print(f'{artist_name} not found')
                     top_songs.append([])
             top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
-            print(f'TOP SONGS DICT : {top_songs_dict}')
+            # print(f'TOP SONGS DICT : {top_songs_dict}')
+            print(rec_names)
+            save_recs_as_spotify_playlist(rec_names, [i[1] for i in top_songs if len(i) > 0])
         # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
         
         return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})

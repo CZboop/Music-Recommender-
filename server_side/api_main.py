@@ -588,6 +588,7 @@ def get_top_songs_for_artist(artist_id):
 # TODO: ask user if want to save, and ask for user submitted name? with default tho
 def save_recs_as_spotify_playlist(recs, tracks, name=f'recommenderPlaylist{str(dt.date.today())}'):
     # 
+    print(f'LENGTH OF PLAYLIST SHOULD BE::::::::{len(tracks)}')
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
     post_params = {
         "name": name,
@@ -723,7 +724,8 @@ def recommend():
             print(rec_names)
             top_songs_list = list(chain.from_iterable(i for i in top_songs.values() if len(i) > 0))
             print(f'TOP SONGS LIST::::::{top_songs_list}')
-            save_recs_as_spotify_playlist(rec_names, top_songs_list)
+            print(f'TOP SONGS LENGTH::::::{len(top_songs_list)}')
+            save_recs_as_spotify_playlist(rec_names, top_songs_list[:100])
         # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
         
         return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})

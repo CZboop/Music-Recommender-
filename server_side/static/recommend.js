@@ -22,22 +22,28 @@
               }
               else {
                 Object.keys(recs).forEach(function(key, index){
+                  let nameNode = document.createElement("h4");
+                  nameNode.textContent = "Artist:";
+                  $(recs_container.appendChild(nameNode));
                   let pNode = document.createElement("a");
-                  pNode.textContent = key
-                  pNode.href = recs[key]
+                  pNode.textContent = key;
+                  pNode.href = recs[key];
                   $(recs_container.appendChild(pNode));
-                  lineBreak = document.createElement("br");
+                  let lineBreak = document.createElement("br");
                   $(recs_container.appendChild(lineBreak));
-                  if (topSongs[index].length > 0){
+                  console.log(topSongs);
+                  if (topSongs[key]){
                     let topSongHeading = document.createElement('h5');
                     topSongHeading.textContent = 'Recommended Songs';
                     $(recs_container.appendChild(topSongHeading));
-                    topSongs[index].forEach(function(subArray){
+                    topSongs[key].forEach(function(subArray){
                       console.log(subArray);
                       let topSongsNode = document.createElement("a");
                       topSongsNode.textContent = subArray[0];
                       topSongsNode.href = `https://open.spotify.com/track/${subArray[1]}`;
                       $(recs_container.appendChild(topSongsNode));
+                      let lineBreak = document.createElement("br");
+                      $(recs_container.appendChild(lineBreak));
                     })
                   }
                 })

@@ -495,7 +495,7 @@ def find_artist_in_spotify(artist_name):
     res = requests.get(url=f'https://api.spotify.com/v1/search?type=artist&q={artist_name}', headers= headers)
     # print(f"Artist Search Response: {res.json()['artists']['items'][0]['id']}")
     # TODO: will be using this method to add for existing last fm dataset artists who may not all be on spotify, handle this
-    print(res.json())
+    # print(res.json())
     try:
         if res.json()['artists']['items'][0]['name'].translate(str.maketrans('', '', string.punctuation)).strip().lower() != artist_name.translate(str.maketrans('', '', string.punctuation)).strip().lower():
             print(f'{artist_name} not found')
@@ -693,6 +693,7 @@ def recommend():
         rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
 
         rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
+        print(rec_name_links)
         past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
 
         # print(past_rec_names[0]) 
@@ -700,24 +701,29 @@ def recommend():
         # and what to do if not found on spotify
         #
         # top_songs_dict = None
-        top_songs = []
+        top_songs = {}
+        if 'spotify_user_id' not in session:
+            pass
+            # TODO: add client credentials auth flow to get spotify info without user login (for top songs etc.)
         if 'spotify_user_id' in session:
-            top_songs = []
+            top_songs = {}
             for artist_name in rec_names:
                 # TODO: maybe adjust/test properly to made sure not other errors than just artist not found/ better handle within func
                 try:
                     spotify_id = find_artist_in_spotify(artist_name)
                     top_songs_for_artist = get_top_songs_for_artist(spotify_id)
                     print(top_songs_for_artist)
-                    top_songs.append(top_songs_for_artist)
+                    top_songs[artist_name] = top_songs_for_artist
                     # TODO: make this json friendly
                 except:
                     print(f'{artist_name} not found')
-                    top_songs.append([])
-            top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
+                    # top_songs.append([])
+            # top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
             # print(f'TOP SONGS DICT : {top_songs_dict}')
             print(rec_names)
-            save_recs_as_spotify_playlist(rec_names, [i[1] for i in top_songs if len(i) > 0])
+            top_songs_list = list(chain.from_iterable(i for i in top_songs.values() if len(i) > 0))
+            print(f'TOP SONGS LIST::::::{top_songs_list}')
+            save_recs_as_spotify_playlist(rec_names, top_songs_list)
         # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
         
         return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})

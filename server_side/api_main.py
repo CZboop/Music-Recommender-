@@ -672,6 +672,9 @@ def recommend():
         num_rated = len(get_artists_rated(userid))
 
         recommender = Recommender()
+        print (f'best model rank: {recommender.model}')
+        print (f'best model maxiter: {recommender.model.getMaxIter()}')
+        print (f'best model regparam: {recommender.model._java_obj.parent().getRegParam()}')
         recs = recommender.recommend_subset(recommender.single_user_subset(userid), 25)
         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
         # print(recs_)

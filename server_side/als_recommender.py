@@ -51,6 +51,7 @@ class Recommender:
     def single_user_subset(self, user_id):
         subset = self.user_listens.filter(self.user_listens._3 == user_id)
         # subset.select("user_id").limit(1).show()
+        print(user_id)
         return subset
 
     def load_model(self):

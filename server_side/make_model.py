@@ -68,8 +68,8 @@ class Model:
     #
     def _tune(self):
         param_grid = ParamGridBuilder()\
-            .addGrid(self.als_model.rank, [5, 6, 7, 8, 9, 10])\
-            .addGrid(self.als_model.maxIter, [8, 10, 12, 14])\
+            .addGrid(self.als_model.rank, [6, 7, 8, 9])\
+            .addGrid(self.als_model.maxIter, [8, 10, 12])\
             .addGrid(self.als_model.regParam, [0.075, 0.1, 0.125]).build()
         eval = RegressionEvaluator(metricName = "rmse", labelCol = '_4', predictionCol = 'prediction')
         cross_validator = CrossValidator(estimator = self.als_model, estimatorParamMaps = param_grid, evaluator = eval, numFolds = 5)
@@ -81,6 +81,9 @@ class Model:
         best_rank = best_model._java_obj.parent().getRank()
         best_maxIter = best_model._java_obj.parent().getMaxIter()
         best_regParam = best_model._java_obj.parent().getRegParam()
+        print(f'BEST RANK: {best_rank}')
+        print(f'BEST MAXITER: {best_maxIter}')
+        print(f'BEST REGPARAM: {best_regParam}')
 
         return [best_rank, best_maxIter, best_regParam]
 

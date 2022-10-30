@@ -1,5 +1,5 @@
 import unittest
-from api_main import app
+from app import app
 
 class TestRouteStatuses(unittest.TestCase):
 
@@ -19,12 +19,12 @@ class TestRouteStatuses(unittest.TestCase):
 
         self.assertEqual(status_code, 404)
 
-    def test_welcome_without_login_gives_redirect_status(self):
+    def test_welcome_without_login_gives_200_status(self):
         client = app.test_client(self)
         response = client.get('/welcome')
         status_code = response.status_code
 
-        self.assertEqual(status_code, 302)
+        self.assertEqual(status_code, 200)
     # TODO: add test for when user in session
 
     def test_success_gives_200_status(self):
@@ -34,12 +34,12 @@ class TestRouteStatuses(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
 
-    def test_spotify_portal_gives_redirect_status(self):
+    def test_spotify_portal_gives_200_status(self):
         client = app.test_client(self)
         response = client.get('/portal')
         status_code = response.status_code
 
-        self.assertEqual(status_code, 302)
+        self.assertEqual(status_code, 200)
 
     def test_add_artist_gives_200_status(self):
         client = app.test_client(self)

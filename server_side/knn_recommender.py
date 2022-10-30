@@ -22,11 +22,13 @@ class KNNRecommender:
         listen_data = cur.fetchall()
         cur.close()
         conn.close()
-
+        # print(listen_data[:5])
+        rating_df = pd.DataFrame(listen_data, columns=['serial', 'user_id', 'artist_id', 'rating'])
         # prep data into user artist matrix as df
-        # df_listen_features = pd.read_sql(listen_data).pivot_table(index='artist_id', columns='user_id', values='scrobbles').fillna(0)
+        df_listen_features = rating_df.pivot_table(index='artist_id', columns='user_id', values='rating').fillna(0)
         # as scipy sparse matrix
-        mat_listen_features = csr_matrix(listen_data)
+        # TODO: issue with the matrix need to properly assign index etc
+        mat_listen_features = csr_matrix(df_listen_features)
         self.matrix = mat_listen_features
     
     def make_model(self):

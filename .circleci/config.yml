@@ -16,7 +16,7 @@ jobs:
 
       - run:
           name: Run tests
-          command: python test_endpoints.py
+          command: python src/test_endpoints.py
 
 # Invoke jobs via workflows
 workflows:

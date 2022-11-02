@@ -1,5 +1,5 @@
 import unittest
-from app import app
+from src.app import app
 
 class TestRouteStatuses(unittest.TestCase):
 

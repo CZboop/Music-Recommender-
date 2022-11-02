@@ -16,9 +16,7 @@ jobs:
 
       - run:
           name: Run tests
-          command: |
-          cd src
-          python -m pytest
+          command: python -m pytest
 
 # Invoke jobs via workflows
 workflows:

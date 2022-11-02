@@ -1,8 +1,8 @@
-from app import app
+from src.app import app
 from flask import render_template, request, url_for, redirect, flash, jsonify, session, render_template_string, make_response
 from flask_restful import Resource, Api, reqparse
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs
-from app.models import Recommender, KNNRecommender, Model
+from src.app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs
+from src.app.models import Recommender, KNNRecommender, Model
 
 @app.route('/')
 def home():

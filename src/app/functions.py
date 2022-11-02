@@ -1,4 +1,4 @@
-from app import app
+from src.app import app
 from functools import wraps
 import datetime as dt
 import psycopg2

@@ -1,5 +1,5 @@
 src/__pycache__/
 src/app/__pycache__/
 src/app/config_secrets.py
-tests/__pycache__
-tests/unit/__pycache__
+src/tests/__pycache__
+src/tests/unit/__pycache__

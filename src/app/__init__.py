@@ -8,5 +8,5 @@ api = Api(app)
 secret = secrets.token_urlsafe(32)
 app.config['SECRET_KEY'] = secret
 
-from src.app import routes
-from src.app import functions
+from app import routes
+from app import functions

@@ -15,11 +15,8 @@ jobs:
           pkg-manager: pip
 
       - run:
-          name: Navigate to dir for tests
-          command: cd src
-      - run:
           name: Run tests
-          command: python -m pytest
+          command: cd src && python -m pytest
 
 # Invoke jobs via workflows
 workflows:

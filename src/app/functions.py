@@ -29,8 +29,6 @@ def get_highest_user_id():
     conn.close()
     return int(id[0][0])
 
-
-
 # note currently check for duplicates in method that adds, and the route is exposed, may want to remove and just have as func
 def add_new_artist(name):
     name_escaped = name.replace("'", "''")
@@ -41,8 +39,6 @@ def add_new_artist(name):
     conn.commit()
     cur.close()
     conn.close()
-
-
 
 def rating_artist(artist_name, user_id, rating):
     artist_id = get_artist_id_from_name(artist_name)
@@ -69,8 +65,6 @@ def rating_artist(artist_name, user_id, rating):
 
     return updated
 
-
-
 def get_db_connection():
     conn = psycopg2.connect(host='localhost',
                             database='recommend',
@@ -78,13 +72,10 @@ def get_db_connection():
                             password=os.environ['DB_PASSWORD'])
     return conn
 
-
 def get_username_from_token():
     token_decode = jwt.decode(session['user'], app.config['SECRET_KEY'], algorithms=['HS256'])
     username = token_decode['username']
     return username
-
-
 
 def store_token_user_info(token):
     json_token = jsonify({'token': token})
@@ -95,7 +86,25 @@ def create_token(username):
     expiry_datetime = dt.datetime.utcnow() + dt.timedelta(hours=24)
     return jwt.encode({'username': username, 'expires' : expiry_datetime.strftime("%m/%d/%Y, %H:%M:%S")}, app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
+# checking if user already rated an artist to update rather than just re-add rating
+def is_artist_rated(artist_name):
+    if 'user' in session:
+        username = get_username_from_token()
+        user_id = get_user_from_name(username)
+        artist_id = get_artist_id_from_name(artist_name)
 
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM user_ratings WHERE artist_id = {artist_id} AND user_id = {user_id};")
+        result = cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return False if not result else True
+
+    else:
+        return None
 
 def get_user_from_name(name):
     conn = get_db_connection()
@@ -129,17 +138,12 @@ def get_artists_rated(user_id, min_rating = None):
     conn.close()
     return ratings
 
-
-
-
 def get_spotify_recently_played():
     # somewhat test to see what can get back from spotify api
     access_token = session['spotify_access_token']
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
     res = requests.get(url='https://api.spotify.com/v1/me/player/recently-played', headers= headers)
     # TODO: handle at least two possible errors - empty response and user not added to dev dashboard? (flash messages?)
-
-
 
 def get_spotify_top():
     # these can be rated higher than the generally followed
@@ -366,8 +370,6 @@ def refresh_spotify_token():
         new_refresh_token = res.json()['refresh_token']
         session['spotify_refresh_token'] = new_refresh_token
 
-
-
 def is_token_valid():
     # returns two booleans, first is whether user had ever signed in, second is whether valid
     if 'user' in session:
@@ -413,4 +415,3 @@ def get_artist_link_from_id(id):
     cur.close()
     conn.close()
     return artist_link[0][0]
-

@@ -1,8 +1,9 @@
 from app import app
 from flask import render_template, request, url_for, redirect, flash, jsonify, session, render_template_string, make_response
 from flask_restful import Resource, Api, reqparse
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id
 from app.models import Recommender, KNNRecommender, Model
+from app.validator import PasswordValidator, EmailValidator, UsernameValidator
 
 @app.route('/')
 def home():
@@ -43,26 +44,6 @@ def rate_artist():
     artists = get_all_artists()
 
     return render_template('rate_artist.html', artists=artists, logged_in=logged_in)
-
-# checking if user already rated an artist to update rather than just re-add rating
-def is_artist_rated(artist_name):
-    if 'user' in session:
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
-        artist_id = get_artist_id_from_name(artist_name)
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(f"SELECT * FROM user_ratings WHERE artist_id = {artist_id} AND user_id = {user_id};")
-        result = cur.fetchall()
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        return False if not result else True
-
-    else:
-        return None
 
 @app.route('/recommendations', methods=['POST', 'GET'])
 @authenticate

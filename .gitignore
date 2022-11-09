@@ -3,3 +3,4 @@ src/app/__pycache__/
 src/app/config_secrets.py
 src/tests/__pycache__
 src/tests/unit/__pycache__
+src/tests/functional/__pycache__

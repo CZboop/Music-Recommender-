@@ -11,9 +11,9 @@ class PasswordValidator:
             return False
         if not any([i in self.password for i in "!?@*&%$#_"]):
             return False
-        if not any([i.lower() == i for i in self.password]):
+        if not any([i.isupper() for i in self.password]):
             return False
-        if not any([i.upper() == i for i in self.password]):
+        if not any([i.islower() for i in self.password]):
             return False
         if not any([i.isdigit() for i in self.password]):
             return False

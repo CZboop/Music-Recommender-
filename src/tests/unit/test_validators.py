@@ -2,7 +2,7 @@ import unittest
 from app.validator import PasswordValidator, EmailValidator, UsernameValidator
 from app.functions import get_db_connection
 from db.db_access import setup_tables
-import os, random
+import os, random, string
 
 class TestValidators(unittest.TestCase):
 

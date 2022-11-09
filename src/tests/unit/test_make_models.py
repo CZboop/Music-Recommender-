@@ -1,5 +1,6 @@
 import unittest
 from app.models import Recommender
+import os
 
 class TestModelMaking(unittest.TestCase):
 

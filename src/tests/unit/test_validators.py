@@ -2,7 +2,7 @@ import unittest
 from app.validator import PasswordValidator, EmailValidator, UsernameValidator
 from app.functions import get_db_connection
 from db.db_access import setup_tables
-import os
+import os, random
 
 class TestValidators(unittest.TestCase):
 
@@ -73,17 +73,18 @@ class TestValidators(unittest.TestCase):
         actual = validator.is_email_valid()
         self.assertFalse(actual)
 
-    def test_email_validator_already_in_use_returns_false(self):
+    def test_email_validator_already_in_use_returns_true_if_already_in_use(self):
         # GIVEN - we have added a user with a given email (adding directly into db)
+        email = 'example@email.com'
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('test_user', 123, 'example@email.com', crypt('P@ssword123', gen_salt('bf', 8)));")
+        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('test_user', 123, '{email}', crypt('P@ssword123', gen_salt('bf', 8)));")
         conn.commit()
         cur.close()
         conn.close()
 
         # WHEN - we try to validate that email
-        validator = EmailValidator('example@email.com')
+        validator = EmailValidator(email)
 
         # THEN - email is in use
         actual = validator.is_email_in_use()

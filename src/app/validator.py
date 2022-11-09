@@ -53,7 +53,7 @@ class EmailValidator:
     def is_email_in_use(self):
         conn = self.get_db_connection()
         cur = conn.cursor()
-        cur.execute(f"SELECT * FROM users WHERE name = '{self.email}';")
+        cur.execute(f"SELECT * FROM users WHERE email = '{self.email}';")
         matching_emails = cur.fetchall()
         cur.close()
         conn.close()

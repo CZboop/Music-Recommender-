@@ -119,7 +119,7 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with all correct info
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.url
+        response_url = response.path
         response_text = response.get_data(as_text = True)
         welcome_message = f'Welcome, {username}!'
 
@@ -136,7 +136,7 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with all incorrect info
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.url
+        response_url = response.path
         response_text = response.get_data(as_text = True)
         flash_message = 'Invalid login details. Try again or sign up.'
 
@@ -153,7 +153,7 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with wrong password
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.url
+        response_url = response.path
         response_text = response.get_data(as_text = True)
         flash_message = 'Invalid login details. Try again or sign up.'
 
@@ -170,7 +170,7 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with wrong username
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.url
+        response_url = response.path
         response_text = response.get_data(as_text = True)
         flash_message = 'Invalid login details. Try again or sign up.'
 
@@ -201,7 +201,7 @@ class TestUserFunctionality(unittest.TestCase):
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
         
         # WHEN - we visit log out page
-        undertest_response = client.get('/log-out')
+        undertest_response = client.get('/log-out', follow_redirects=True)
         actual_response = undertest_response.get_data(as_text = True)
 
         # THEN - we get a success message
@@ -213,7 +213,7 @@ class TestUserFunctionality(unittest.TestCase):
         client = app.test_client(self) 
         
         # WHEN - we visit log out page
-        undertest_response = client.get('/log-out')
+        undertest_response = client.get('/log-out', follow_redirects=True)
         actual_response = undertest_response.get_data(as_text = True)
 
         # THEN - we get a message to say we weren't logged in
@@ -230,8 +230,9 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we check the session cookie
         with client as c:
             with c.session_transaction() as session:
-                # THEN - token is there
-                self.assertTrue('user' in session)
+                actual_session = session
+        # THEN - token is there
+        self.assertTrue('user' in actual_session)
 
     def test_log_out_removes_token_from_session(self):
         # GIVEN - we sign in with valid info
@@ -241,11 +242,12 @@ class TestUserFunctionality(unittest.TestCase):
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
         
         # WHEN - we sign out and then check the session cookie
-        client.get('/log-out')
+        client.get('/log-out', follow_redirects=True)
         with client as c:
             with c.session_transaction() as session:
-                # THEN - token is there
-                self.assertTrue('user' in session)
+                actual_session = session
+        # THEN - token is not there
+        self.assertFalse('user' in actual_session)
 
     def cleanup_remove_from_db(self, username):
         connection = get_db_connection()

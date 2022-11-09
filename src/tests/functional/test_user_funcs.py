@@ -9,8 +9,8 @@ class TestUserFunctionality(unittest.TestCase):
     ### TESTING THE USER RELATED FUNCS AND ROUTES
 
     def setUp(self):
-        os.environ['DB_USERNAME'] = 'postgres'
-        os.environ['DB_PASSWORD'] = 'password'
+        os.environ['DB_USERNAME'] = 'testuser'
+        os.environ['DB_PASSWORD'] = ''
 
     def test_connect_to_db_gives_connection_instance(self):
         connection_obj = get_db_connection()

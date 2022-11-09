@@ -20,7 +20,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
         environment:
           POSTGRES_USER: testuser
-          POSTGRES_DB: circle_test
+          POSTGRES_DB: recommend
           POSTGRES_PASSWORD: ""
 
     steps:

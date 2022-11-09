@@ -3,14 +3,17 @@ from app import app
 from app.functions import get_db_connection
 import random, string, re
 import os
+from db import setup_tables
 
 class TestUserFunctionality(unittest.TestCase):
 
     ### TESTING THE USER RELATED FUNCS AND ROUTES
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         os.environ['DB_USERNAME'] = 'testuser'
         os.environ['DB_PASSWORD'] = ''
+        setup_tables()
 
     def test_connect_to_db_gives_connection_instance(self):
         connection_obj = get_db_connection()

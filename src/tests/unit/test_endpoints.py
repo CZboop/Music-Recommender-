@@ -179,9 +179,5 @@ class TestRouteResponseTypes(unittest.TestCase):
         response = client.get('/log-out')
         self.assertEqual(response.content_type, "text/html; charset=utf-8")
 
-    # TODO: test remaining add-spotify-info route that needs to mock/ use session storage
-    # TODO: test other methods for routes that have both get and post
-    # TODO: more granular tests similar to actual use, different responses depending on params and session
-
 if __name__ == "__main__":
     unittest.main()

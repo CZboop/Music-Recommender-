@@ -106,7 +106,7 @@ class TestUserFunctionality(unittest.TestCase):
         #THEN - the expected flash message is shown on the web page
         flash_message = 'Username already in use. Please try again.'
         response_data = undertest_response.get_data(as_text = True)
-
+        print(response_data)
         self.assertEqual(flash_message, response_data)
 
     def cleanup_remove_from_db(self, username):

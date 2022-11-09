@@ -25,6 +25,13 @@ jobs:
 
     steps:
       - checkout
+
+      - run:
+          name: Setup Java
+          command: |
+            RUN apt-get update
+            RUN apt-get install default-jdk -y
+
       - python/install-packages:
           pkg-manager: pip
 
@@ -35,12 +42,17 @@ jobs:
       - run:
           name: Run coverage
           command: cd src && coverage run -m pytest
+
       - run:
           name: Create coverage report
           command: cd src && coverage report
+
       - run:
           name: Create HTML coverage report
           command: cd src && coverage html
+
+      - store_artifacts:
+          path: htmlcov
 
 # Invoke jobs via workflows
 workflows:

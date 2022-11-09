@@ -1,5 +1,6 @@
 import unittest
 from app.models import Recommender
+from db.db_access import setup_tables
 import os
 
 class TestModelMaking(unittest.TestCase):

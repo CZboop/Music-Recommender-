@@ -99,7 +99,7 @@ class TestUserFunctionality(unittest.TestCase):
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 
         #WHEN - trying to add another user with the same username
-        email = 'user1@email.com'
+        # email = 'user1@email.com'
         undertest_response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 
@@ -107,7 +107,7 @@ class TestUserFunctionality(unittest.TestCase):
         flash_message = 'Username already in use. Please try again.'
         response_data = undertest_response.get_data(as_text = True)
 
-        self.assertTrue(flash_message in response_data)
+        self.assertEqual(flash_message, response_data)
 
     def cleanup_remove_from_db(self, username):
         connection = get_db_connection()

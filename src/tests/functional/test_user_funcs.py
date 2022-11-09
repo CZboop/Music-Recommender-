@@ -99,7 +99,9 @@ class TestUserFunctionality(unittest.TestCase):
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 
         #WHEN - trying to add another user with the same username
-        # email = 'user1@email.com'
+        # will de signed in from above (by default sign in when sign up), will get a fresh test client, may change when log out tested
+        client = app.test_client(self)
+
         undertest_response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 

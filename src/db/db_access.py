@@ -1,6 +1,6 @@
 import os
 import psycopg2
-from starter_data_to_sql import CSVToSQL
+from training_data.starter_data_to_sql import CSVToSQL
 
 def setup_tables():
         # DB_USERNAME and DB_PASSWORD are environment variables will need to be set if in new environment

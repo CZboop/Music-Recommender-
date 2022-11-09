@@ -29,9 +29,8 @@ jobs:
       - run:
           name: Setup Java
           command: |
-            USER root
-            RUN sudo apt-get update
-            RUN sudo apt-get install default-jdk -y
+            sudo apt-get update
+            sudo apt-get install default-jdk -y
 
       - python/install-packages:
           pkg-manager: pip

@@ -29,8 +29,8 @@ jobs:
       - run:
           name: Setup Java
           command: |
-            RUN apt-get update
-            RUN apt-get install default-jdk -y
+            apt-get update
+            apt-get install -y default-jre-headless
 
       - python/install-packages:
           pkg-manager: pip

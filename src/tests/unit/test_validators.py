@@ -44,7 +44,24 @@ class TestValidators(unittest.TestCase):
     # TODO: tests both email content and also whether already in use in db
 
     def test_email_validator_valid_dot_com_returns_true(self):
-        pass
+        validator = EmailValidator('example_email@email.com')
+        actual = validator.is_email_valid()
+        self.assertTrue(actual)
+
+    def test_email_validator_valid_dot_co_dot_uk_returns_true(self):
+        validator = EmailValidator('example_email@email.co.uk')
+        actual = validator.is_email_valid()
+        self.assertTrue(actual)
+
+    def test_email_validator_valid_no_at_returns_false(self):
+        validator = EmailValidator('example_emailatemail.com')
+        actual = validator.is_email_valid()
+        self.assertFalse(actual)
+
+    def test_email_validator_valid_no_dot_returns_false(self):
+        validator = EmailValidator('example_email@emaildotcom')
+        actual = validator.is_email_valid()
+        self.assertFalse(actual)
 
 if __name__=="__main__":
     unittest.main()

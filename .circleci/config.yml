@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - checkout
-      # TODO: find a fix to allow java install within this env
+
       - run:
           name: Setup Java
           command: |

@@ -28,15 +28,18 @@ class TestUserFunctionality(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_db_has_user_table(self):
-        connection = get_db_connection()
-        cur = connection.cursor()
-        # passes if does not throw undefinedtable error/ gets any result set
-        cur.execute("SELECT * FROM users LIMIT 1;")
-        actual = cur.fetchall()
-        cur.close()
-        connection.close()
-        self.assertTrue(actual)
-
+        try:
+            connection = get_db_connection()
+            cur = connection.cursor()
+            # passes if does not throw undefinedtable error/ gets any result set
+            cur.execute("SELECT * FROM users LIMIT 1;")
+            actual = cur.fetchall()
+            cur.close()
+            connection.close()
+            # self.assertTrue(actual)
+        
+        except UndefinedTable:
+            self.fail("Selecting from 'User' table raised an Undefined Table error")
 
     def test_can_add_new_user(self):
         client = app.test_client(self)
@@ -49,7 +52,7 @@ class TestUserFunctionality(unittest.TestCase):
         connection = get_db_connection()
         cur = connection.cursor()
         cur.execute(f"SELECT * FROM users WHERE name = '{username}';")
-        actual = cur.fetchall()[0]
+        actual = cur.fetchall()
         cur.close()
         connection.close()
 
@@ -88,13 +91,21 @@ class TestUserFunctionality(unittest.TestCase):
         self.assertTrue(flash_message in response_data)
     
     def test_username_validator_in_route_flash_message(self):
-        client = app.test_client(self)
-        email = 'user1@email.com'
-        response = client.post('/sign-up', data=dict(username='user1', password='P@ssword123', 
+        # GIVEN - an existing user with a certain username
+        client = app.test_client(self) 
+        username = 'user1'
+        email = f'{username}@email.com'
+        response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 
+        #WHEN - trying to add another user with the same username
+        email = 'user2@email.com'
+        undertest_response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
+        confirm_password='P@ssword123', email=email), follow_redirects=True)
+
+        #THEN - the expected flash message is shown on the web page
         flash_message = 'Username already in use. Please try again.'
-        response_data = response.get_data(as_text = True)
+        response_data = undertest_response.get_data(as_text = True)
 
         self.assertTrue(flash_message in response_data)
 

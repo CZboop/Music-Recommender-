@@ -1,1 +1,1 @@
-from training_data.starter_data_to_sql import CSVToSQL
+from training_data import starter_data_to_sql

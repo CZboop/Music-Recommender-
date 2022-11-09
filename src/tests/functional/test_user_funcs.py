@@ -118,14 +118,14 @@ class TestUserFunctionality(unittest.TestCase):
         
         # WHEN - we sign in with all correct info
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
+        with client:
+            response_url = response.path
+            response_text = response.get_data(as_text = True)
+            welcome_message = f'Welcome, {username}!'
 
-        response_url = response.path
-        response_text = response.get_data(as_text = True)
-        welcome_message = f'Welcome, {username}!'
-
-        # THEN - sign in and redirect to a welcome page containing the username :)
-        self.assertEqual(response_url, '/')
-        self.assertTrue(welcome_message in response_text)
+            # THEN - sign in and redirect to a welcome page containing the username :)
+            self.assertEqual(response_url, '/')
+            self.assertTrue(welcome_message in response_text)
 
     def test_cannot_sign_in_with_all_invalid_info(self):
         # GIVEN - user info not in the db
@@ -136,13 +136,14 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with all incorrect info
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.path
-        response_text = response.get_data(as_text = True)
-        flash_message = 'Invalid login details. Try again or sign up.'
+        with client:
+            response_url = response.path
+            response_text = response.get_data(as_text = True)
+            flash_message = 'Invalid login details. Try again or sign up.'
 
-        # THEN - new url is still login and error message is on the page
-        self.assertEqual(response_url, '/login')
-        self.assertTrue(flash_message in response_text)
+            # THEN - new url is still login and error message is on the page
+            self.assertEqual(response_url, '/login')
+            self.assertTrue(flash_message in response_text)
 
     def test_cannot_sign_in_with_valid_username_invalid_password(self):
         # GIVEN - user in the db, wrong password
@@ -153,13 +154,14 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with wrong password
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.path
-        response_text = response.get_data(as_text = True)
-        flash_message = 'Invalid login details. Try again or sign up.'
+        with client:
+            response_url = response.path
+            response_text = response.get_data(as_text = True)
+            flash_message = 'Invalid login details. Try again or sign up.'
 
-        # THEN - new url is still login and error message is on the page
-        self.assertEqual(response_url, '/login')
-        self.assertTrue(flash_message in response_text)
+            # THEN - new url is still login and error message is on the page
+            self.assertEqual(response_url, '/login')
+            self.assertTrue(flash_message in response_text)
     
     def test_cannot_sign_in_with_invalid_username_valid_password(self):
         # GIVEN - user not in db, password exists in db
@@ -170,13 +172,14 @@ class TestUserFunctionality(unittest.TestCase):
         # WHEN - we sign in with wrong username
         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
 
-        response_url = response.path
-        response_text = response.get_data(as_text = True)
-        flash_message = 'Invalid login details. Try again or sign up.'
+        with client:
+            response_url = response.path
+            response_text = response.get_data(as_text = True)
+            flash_message = 'Invalid login details. Try again or sign up.'
 
-        # THEN - new url is still login and error message is on the page
-        self.assertEqual(response_url, '/login')
-        self.assertTrue(flash_message in response_text)
+            # THEN - new url is still login and error message is on the page
+            self.assertEqual(response_url, '/login')
+            self.assertTrue(flash_message in response_text)
 
     def test_cannot_sign_in_if_already_signed_in(self):
         # GIVEN - we have already signed in with valid info

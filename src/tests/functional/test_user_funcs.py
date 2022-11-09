@@ -52,7 +52,7 @@ class TestUserFunctionality(unittest.TestCase):
         connection = get_db_connection()
         cur = connection.cursor()
         cur.execute(f"SELECT * FROM users WHERE name = '{username}';")
-        actual = cur.fetchall()
+        actual = cur.fetchall()[0]
         cur.close()
         connection.close()
 

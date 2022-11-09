@@ -27,6 +27,9 @@ def get_highest_user_id():
     id = cur.fetchall()
     cur.close()
     conn.close()
+    # if no users yet, return zero then will increment and add next user as id 1
+    if not id:
+        return 0
     return int(id[0][0])
 
 # note currently check for duplicates in method that adds, and the route is exposed, may want to remove and just have as func

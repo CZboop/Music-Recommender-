@@ -99,7 +99,7 @@ class TestUserFunctionality(unittest.TestCase):
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 
         #WHEN - trying to add another user with the same username
-        email = 'user2@email.com'
+        email = 'user1@email.com'
         undertest_response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
         confirm_password='P@ssword123', email=email), follow_redirects=True)
 

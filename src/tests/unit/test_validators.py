@@ -1,7 +1,17 @@
 import unittest
 from app.validator import PasswordValidator, EmailValidator, UsernameValidator
+from app.functions import get_db_connection
+from db.db_access import setup_tables
 
 class TestValidators(unittest.TestCase):
+
+    ### ONE-TIME SETUP FOR DB CONNECTION
+
+    @classmethod
+    def setUpClass(cls):
+        os.environ['DB_USERNAME'] = 'testuser'
+        os.environ['DB_PASSWORD'] = ''
+        setup_tables()
 
     ### TEST PASSWORD VALIDATOR
 
@@ -62,19 +72,50 @@ class TestValidators(unittest.TestCase):
         actual = validator.is_email_valid()
         self.assertFalse(actual)
 
-    # TODO: test with db connection
     def test_email_validator_already_in_use_returns_false(self):
-        validator = EmailValidator('example_email@emaildotcom')
-        actual = validator.is_email_valid()
-        self.assertFalse(actual)
+        # GIVEN - we have added a user with a given email (adding directly into db)
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('test_user', 123, 'example@email.com', crypt('P@ssword123', gen_salt('bf', 8)));")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # WHEN - we try to validate that email
+        validator = EmailValidator('example@email.com')
+
+        # THEN - email is in use
+        actual = validator.is_email_in_use()
+        self.assertTrue(actual)
 
     ### TEST USERNAME VALIDATOR
 
-    def test_username_not_in_use_returns_true(self):
-        pass
+    def test_username_in_use_returns_true(self):
+        # GIVEN - we have added a user with a given username (adding directly into db)
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('test_user', 123, 'example@email.com', crypt('P@ssword123', gen_salt('bf', 8)));")
+        conn.commit()
+        cur.close()
+        conn.close()
 
-    def test_username_already_in_use_return_false(self):
-        pass
+        # WHEN - we try to validate that username
+        validator = UsernameValidator('test_user')
+
+        # THEN - username is in use
+        actual = validator.is_username_in_use()
+        self.assertTrue(actual)
+
+    def test_username_not_in_use_return_false(self):
+        # GIVEN - a username not in the db
+        username = 'test_' + ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(10))
+
+        # WHEN - we try to validate that username
+        validator = UsernameValidator(username)
+
+        # THEN - username is in use
+        actual = validator.is_username_in_use()
+        self.assertFalse(actual)
 
 if __name__=="__main__":
     unittest.main()

@@ -32,6 +32,16 @@ jobs:
           name: Run tests
           command: cd src && python -m pytest
 
+      - run:
+          name: Run coverage
+          command: cd src && coverage run -m pytest
+      - run:
+          name: Create coverage report
+          command: cd src && coverage report
+      - run:
+          name: Create HTML coverage report
+          command: cd src && coverage html
+
 # Invoke jobs via workflows
 workflows:
   main: #

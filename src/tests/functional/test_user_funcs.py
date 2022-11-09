@@ -3,7 +3,7 @@ from app import app
 from app.functions import get_db_connection
 import random, string, re
 import os
-from db import setup_tables
+from db.db_access import setup_tables
 
 class TestUserFunctionality(unittest.TestCase):
 

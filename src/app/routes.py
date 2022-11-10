@@ -1,7 +1,7 @@
 from app import app
 from flask import render_template, request, url_for, redirect, flash, jsonify, session, render_template_string, make_response
 from flask_restful import Resource, Api, reqparse
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id
 from app.models import Recommender, KNNRecommender, Model
 from app.validator import PasswordValidator, EmailValidator, UsernameValidator
 

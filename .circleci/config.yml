@@ -19,9 +19,9 @@ jobs:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
         environment:
-          POSTGRES_USER: testuser
+          POSTGRES_USER: postgres
           POSTGRES_DB: recommend
-          POSTGRES_PASSWORD: ""
+          POSTGRES_PASSWORD: "password"
 
     steps:
       - checkout

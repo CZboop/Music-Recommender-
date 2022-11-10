@@ -52,7 +52,7 @@ jobs:
           command: cd src && coverage html
 
       - store_artifacts:
-          path: htmlcov
+          path: src/htmlcov
 
 # Invoke jobs via workflows
 workflows:

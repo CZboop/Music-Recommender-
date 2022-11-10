@@ -10,8 +10,8 @@ class TestValidators(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        os.environ['DB_USERNAME'] = 'testuser'
-        os.environ['DB_PASSWORD'] = ''
+        os.environ['DB_USERNAME'] = 'postgres'
+        os.environ['DB_PASSWORD'] = 'password'
         setup_tables()
 
     ### TEST PASSWORD VALIDATOR

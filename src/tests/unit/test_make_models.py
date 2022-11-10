@@ -8,8 +8,8 @@ class TestModelMaking(unittest.TestCase):
     ### TESTING ML MODEL BASIC FUNCTIONALITY
     @classmethod
     def setUpClass(cls):
-        os.environ['DB_USERNAME'] = 'testuser'
-        os.environ['DB_PASSWORD'] = ''
+        os.environ['DB_USERNAME'] = 'postgres'
+        os.environ['DB_PASSWORD'] = 'password'
         setup_tables()
 
     # TODO: fix error when trying to test (cannot infer schema from empty dataset)

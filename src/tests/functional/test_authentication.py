@@ -19,6 +19,15 @@ class TestAuthentication(unittest.TestCase):
         os.environ['DB_USERNAME'] = 'postgres'
         os.environ['DB_PASSWORD'] = 'password'
         setup_tables()
+        self.setup_add_test_user()
+
+    def setup_add_test_user(self, username='test_user'):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', 999999, 'test_user999@email.com', crypt('P@ssword123', gen_salt('bf', 8)));")
+        conn.commit()
+        cur.close()
+        conn.close()
 
     def test_home_not_auth(self):
         # GIVEN - not signed in/ no token in session cookie

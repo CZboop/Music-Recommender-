@@ -8,7 +8,7 @@ from flask import request
 from urllib.parse import urlparse
 
 class TestUserFunctionality(unittest.TestCase):
-    
+
     # removing max diff so can see whole diff if test are failing
     maxDiff = None
 

@@ -1,11 +1,17 @@
 import os
 import psycopg2
 from db.training_data.starter_data_to_sql import CSVToSQL
+import pathlib
+
+def db_connect():
+        conn = psycopg2.connect(host="localhost", database="recommend",
+                user=os.environ['DB_USERNAME'], password=os.environ['DB_PASSWORD'])
+
+        return conn
 
 def setup_tables():
         # DB_USERNAME and DB_PASSWORD are environment variables will need to be set if in new environment
-        conn = psycopg2.connect(host="localhost", database="recommend",
-                user=os.environ['DB_USERNAME'], password=os.environ['DB_PASSWORD'])
+        conn = db_connect()
 
         cur = conn.cursor()
 
@@ -22,12 +28,13 @@ def setup_tables():
         conn.close()
 
 def add_starter_data_to_db():
+        conn = db_connect()
         # add existing data to db if first time running
         # creating psql friendly user data that can go straight into table, using class that does this
-        #TODO: update path
-        starter_data = CSVToSQL('./data/lastfm_user_scrobbles.csv', './data/lastfm_artist_list.csv')
+        starter_data = CSVToSQL(f'{pathlib.Path(__file__).parent.resolve()}/training_data/lastfm_user_scrobbles.csv', f'{pathlib.Path(__file__).parent.resolve()}/training_data/lastfm_artist_list.csv')
         user_starter_data , artist_starter_data , listen_starter_data = starter_data.create_all_sql()
         # adding the data
+        cur = conn.cursor()
         cur.execute(user_starter_data)
         cur.execute(artist_starter_data)
         cur.execute(listen_starter_data)
@@ -36,3 +43,7 @@ def add_starter_data_to_db():
 
         cur.close()
         conn.close()
+
+if __name__=="__main__":
+        setup_tables()
+        add_starter_data_to_db()

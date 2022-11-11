@@ -15,6 +15,7 @@ class TestRateArtistFunctionality(unittest.TestCase):
         os.environ['DB_USERNAME'] = 'postgres'
         os.environ['DB_PASSWORD'] = 'password'
         setup_tables()
+        # TODO: add just the few artists that testing to db 
         add_starter_data_to_db()
 
     def setup_test_user(self, username, user_id, email='test_dummy_email@email.com', password='P@ssword123'):
@@ -87,10 +88,61 @@ class TestRateArtistFunctionality(unittest.TestCase):
         self.cleanup_remove_rating(username, artist_name)
 
     def test_rating_artist_not_rated_adds_to_db(self):
-        pass 
+        # GIVEN - we have signed in with valid info for a user with no ratings yet
+        username = 'test_user_123456'
+        user_id = 4455667
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        
+        artist_name = '2pac'
+        test_token = create_token(username)
+
+        # note this method currently removes all ratings for the user
+        self.cleanup_remove_rating(username, artist_name)
+        
+        with app.test_client(self) as client:
+            with client.session_transaction() as sess:
+                sess['user'] = test_token
+            
+        # WHEN - we make a post request to rate an artist and check the user_ratings table
+            undertest_response = client.post('/rate-artist', data=dict(artist = artist_name, rating = 10), follow_redirects=True)
+            # just getting final column from first row (expecting one row result)
+            actual_rating = self.query_user_ratings(username, artist_name)[0][-1]
+
+        # THEN - the rating is in the db
+            expected_rating = 10
+            self.assertEqual(expected_rating, actual_rating) 
+
+        self.cleanup_remove_rating(username, artist_name) 
 
     def test_rating_artist_already_rated_updates_db(self):
-        pass
+        # GIVEN - we have signed in with valid info for a user with no ratings yet
+        username = 'test_user_123456'
+        user_id = 4455667
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        
+        artist_name = '2pac'
+        test_token = create_token(username)
+
+        # note this method currently removes all ratings for the user
+        self.cleanup_remove_rating(username, artist_name)
+        
+        with app.test_client(self) as client:
+            with client.session_transaction() as sess:
+                sess['user'] = test_token
+            
+        # WHEN - we make two post requests to rate the same artist and check the user_ratings table
+            response1 = client.post('/rate-artist', data=dict(artist = artist_name, rating = 10), follow_redirects=True)
+            response2 = client.post('/rate-artist', data=dict(artist = artist_name, rating = 7), follow_redirects=True)
+            # just getting final column from first row (expecting one row result)
+            actual_rating = self.query_user_ratings(username, artist_name)[0][-1]
+
+        # THEN - the rating is in the db, with the new ratings as the first (only) result from db
+            expected_rating = 7
+            self.assertEqual(expected_rating, actual_rating) 
+
+        self.cleanup_remove_rating(username, artist_name)
 
     def query_user_ratings(self, username, artist_name):
         user_id = get_user_from_name(username)

@@ -3,7 +3,7 @@ from app import app
 from app.functions import get_db_connection, create_token, get_user_from_name, get_artist_id_from_name
 import random, string, re
 import os
-from db.db_access import setup_tables
+from db.db_access import setup_tables, add_starter_data_to_db
 
 class TestRateArtistFunctionality(unittest.TestCase):
 
@@ -15,6 +15,7 @@ class TestRateArtistFunctionality(unittest.TestCase):
         os.environ['DB_USERNAME'] = 'postgres'
         os.environ['DB_PASSWORD'] = 'password'
         setup_tables()
+        add_starter_data_to_db()
 
     def setup_test_user(self, username, user_id, email='test_dummy_email@email.com', password='P@ssword123'):
         conn = get_db_connection()

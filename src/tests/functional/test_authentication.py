@@ -169,8 +169,8 @@ class TestAuthentication(unittest.TestCase):
             undertest_response = client.post('/update-rated')
             actual_response = undertest_response.get_data(as_text = True)
 
-        # THEN - see jsonified dict with number of artists rated by that user (0 for fake user)
-            expected_message = '{"num_rated":0}'
+        # THEN - see jsonified dict with number of artists rated by that user (test user rating in other tests)
+            expected_message = '{"num_rated":'
             self.assertTrue(expected_message in actual_response)
 
     def test_update_rated_not_auth(self):

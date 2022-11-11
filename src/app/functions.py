@@ -116,7 +116,10 @@ def get_user_from_name(name):
     user_query_res = cur.fetchall()
     cur.close()
     conn.close()
-    return user_query_res[0][0]
+    try:
+        return user_query_res[0][0]
+    except:
+        return None
 
 def get_artist_id_from_name(name):
     name = name.replace("'", "''")

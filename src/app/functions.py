@@ -138,7 +138,7 @@ def get_artists_rated(user_id, min_rating = None):
     if not min_rating:
         cur.execute(f"SELECT * FROM user_ratings WHERE user_id = '{user_id}';")
     else:
-        cur.execute(f"SELECT * FROM user_ratings WHERE user_id = '{user_id}' AND rating >= min_rating;")
+        cur.execute(f"SELECT * FROM user_ratings WHERE user_id = '{user_id}' AND rating >= {min_rating};")
     ratings = cur.fetchall()
     cur.close()
     conn.close()

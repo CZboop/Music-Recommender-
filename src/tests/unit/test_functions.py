@@ -409,6 +409,26 @@ class TestFunctions(unittest.TestCase):
         self.assertFalse(is_rated)
 
     ## TEST GET HIGHEST USER ID
+    
+    # how to test this without deleting the table/ messing up ids for later tests
+    # def test_get_highest_user_id_with_no_data_gives_zero(self):
+    #     pass
+
+    def test_get_highest_user_id_gets_highest_id(self):
+        # GIVEN - an empty user table
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT auto_id FROM users ORDER BY auto_id DESC LIMIT 1;")
+        expected = cur.fetchall()[0][0]
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # WHEN - we call the get highest id function
+        actual = get_highest_user_id()
+
+        # THEN - the highest user id returned matches the number of users added
+        self.assertEqual(actual, expected)
 
     ## TEST GET ARTIST LINK FROM ID
 
@@ -442,6 +462,7 @@ class TestFunctions(unittest.TestCase):
 
     def does_user_already_exist(self, username):
         return False if not get_user_from_name(username) else True
+
 
 if __name__=="__main__":
     unittest.main()

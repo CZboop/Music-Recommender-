@@ -346,7 +346,7 @@ def welcome():
             #     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
             updated = False
-            if is_artist_rated(artist_name) == True:
+            if is_artist_rated(artist_name, user_id) == True:
                 # updating if user has already rated artist before
                 conn = get_db_connection()
                 cur = conn.cursor()

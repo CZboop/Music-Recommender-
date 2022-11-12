@@ -47,7 +47,7 @@ def rating_artist(artist_name, user_id, rating):
     artist_id = get_artist_id_from_name(artist_name)
     
     updated = False
-    if is_artist_rated(artist_name) == True:
+    if is_artist_rated(artist_name, user_id) == True:
         # updating if user has already rated artist before
         conn = get_db_connection()
         cur = conn.cursor()
@@ -90,10 +90,10 @@ def create_token(username):
     return jwt.encode({'username': username, 'expires' : expiry_datetime.strftime("%m/%d/%Y, %H:%M:%S")}, app.config['SECRET_KEY'], algorithm='HS256').decode('UTF-8')
 
 # checking if user already rated an artist to update rather than just re-add rating
-def is_artist_rated(artist_name):
-    if 'user' in session:
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
+def is_artist_rated(artist_name, user_id = None):
+    if user_id:
+        # username = get_username_from_token()
+        # user_id = get_user_from_name(username)
         artist_id = get_artist_id_from_name(artist_name)
 
         conn = get_db_connection()
@@ -241,7 +241,7 @@ def get_artist_names():
 def get_all_artist_ids(artist_names):
     artist_ids = {} #**COMMENT OUT/REMOVE
     # [1095:]
-    for index, name in enumerate(artist_names[1095:]):
+    for index, name in enumerate(artist_names):
         print(index)
         if index % 20 == 15:
             time.sleep(60)

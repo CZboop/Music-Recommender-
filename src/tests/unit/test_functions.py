@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name
 import datetime as dt
 import jwt, os
 from db.db_access import setup_tables, add_starter_data_to_db
@@ -256,16 +256,77 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(expected_result_type, actual_result_type)
         self.assertEqual(expected_element_type, actual_element_type)
 
-    ## TEST GET ALL ARTIST IDS
-    def test_get_all_artists_and_ids_returns_result_of_same_length(self):
-        pass 
-    
-    def test_get_all_artist_ids_returns_list_of_ints(self):
-        pass
+    ## TEST GET ALL ARTIST IDS (from spotify api, needs auth so not testing here)   
 
     ## TEST RATING ARTIST
+    def test_rating_artist_returns_true_if_updating_rating(self):
+        # GIVEN - user has rated an artist
+        username = 'test_user_123456'
+        user_id = 4455667
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        user_id = get_user_from_name(username)
+        artist_name = '2pac'
+        artist_id = get_artist_id_from_name(artist_name)
+        rating = 7
+
+        test_token = create_token(username)
+
+        self.cleanup_remove_rating(username)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+            
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # WHEN - we call the rating artist boolean returning function for that artist (as if rating again)
+        actual_result = rating_artist(artist_name, user_id, rating)
+
+        # THEN - return true to say artist was already rated
+        self.assertTrue(actual_result)
+
+    def test_rating_artist_returns_false_if_new_rating(self):
+        # GIVEN - user has not rated the artist
+        username = 'test_user_123456'
+        user_id = 4455667
+        artist_name = '2pac'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+
+        test_token = create_token(username)
+
+        self.cleanup_remove_rating(username)
+
+        # WHEN - we call the rating artist boolean returning function for that artist (as if rating again)
+        user_id = get_user_from_name(username)
+        artist_id = get_artist_id_from_name(artist_name)
+        rating = 7
+
+        actual_result = rating_artist(artist_name, user_id, rating)
+
+        # THEN - return false to say not rated before
+        self.assertFalse(actual_result)
 
     ## TEST GET PAST RECOMMENDATIONS
+    def test_can_get_past_recs_for_user_with_past_recs(self):
+        # GIVEN - a user who has past recommendations in the database
+
+        # WHEN - we call get past recommendations
+
+        # THEN - these past recommendations are returned
+        self.assertEqual(None, None)
+
+    def test_getting_past_recs_for_user_with_no_past_recs(self):
+        # GIVEN - a user with no past recs
+
+        # WHEN - we call get past recommendations
+
+        # THEN - we get an empty result set
+        self.assertEqual(None, None)
 
     ## TEST IS ARTIST RATED
 

@@ -211,8 +211,9 @@ class TestFunctions(unittest.TestCase):
     def test_can_get_correct_user_id_from_name(self):
         # GIVEN - a username
         expected_username = 'test_user_1234'
+        user_id = 2244
         if not self.does_user_already_exist(expected_username):
-            self.setup_add_test_user(expected_username)
+            self.setup_test_user(expected_username, user_id)
 
         # WHEN - we call the get user (id) from name function
         actual_result = get_user_from_name(expected_username)
@@ -270,8 +271,6 @@ class TestFunctions(unittest.TestCase):
         artist_id = get_artist_id_from_name(artist_name)
         rating = 7
 
-        test_token = create_token(username)
-
         self.cleanup_remove_rating(username)
 
         conn = get_db_connection()
@@ -297,8 +296,6 @@ class TestFunctions(unittest.TestCase):
         if not self.does_user_already_exist(username):
             self.setup_test_user(username, user_id)
 
-        test_token = create_token(username)
-
         self.cleanup_remove_rating(username)
 
         # WHEN - we call the rating artist boolean returning function for that artist (as if rating again)
@@ -314,19 +311,51 @@ class TestFunctions(unittest.TestCase):
     ## TEST GET PAST RECOMMENDATIONS
     def test_can_get_past_recs_for_user_with_past_recs(self):
         # GIVEN - a user who has past recommendations in the database
+        username = 'test_user_123456'
+        user_id = 4455667
+        artist_name = '2pac'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+
+        user_id = get_user_from_name(username)
+        past_recs_to_add = [100, 200, 300, 400] # artist ids just ints
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        for rec in past_recs_to_add:
+            cur.execute(f"INSERT INTO user_recommendations (user_id, artist_id) VALUES ({user_id}, {rec});")
+            
+        conn.commit()
+        cur.close()
+        conn.close()
 
         # WHEN - we call get past recommendations
+        actual_past_recs = get_past_recs(user_id)
+        actual_artist_ids = [result[-1] for result in actual_past_recs]
 
         # THEN - these past recommendations are returned
-        self.assertEqual(None, None)
+        self.assertEqual(actual_artist_ids, past_recs_to_add)
+        
+        self.cleanup_remove_recs(username)
 
     def test_getting_past_recs_for_user_with_no_past_recs(self):
         # GIVEN - a user with no past recs
+        username = 'test_user_123456'
+        user_id = 4455667
+        artist_name = '2pac'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+
+        user_id = get_user_from_name(username)
 
         # WHEN - we call get past recommendations
+        actual_past_recs = get_past_recs(user_id)
+        expected_past_recs = []
 
         # THEN - we get an empty result set
-        self.assertEqual(None, None)
+        self.assertEqual(actual_past_recs, expected_past_recs)
+        
+        self.cleanup_remove_recs(username)
 
     ## TEST IS ARTIST RATED
 
@@ -340,6 +369,16 @@ class TestFunctions(unittest.TestCase):
         connection = get_db_connection()
         cur = connection.cursor()
         cur.execute(f"DELETE FROM user_ratings WHERE user_id = {user_id};")
+        connection.commit()
+        cur.close()
+        connection.close()
+
+    def cleanup_remove_recs(self, username):
+        user_id = get_user_from_name(username)
+
+        connection = get_db_connection()
+        cur = connection.cursor()
+        cur.execute(f"DELETE FROM user_recommendations WHERE user_id = {user_id};")
         connection.commit()
         cur.close()
         connection.close()

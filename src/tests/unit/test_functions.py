@@ -207,12 +207,61 @@ class TestFunctions(unittest.TestCase):
 
         self.cleanup_remove_rating(username)
         
-
     ## TEST GET USER FROM NAME
+    def test_can_get_correct_user_id_from_name(self):
+        # GIVEN - a username
+        expected_username = 'test_user_1234'
+        if not self.does_user_already_exist(expected_username):
+            self.setup_add_test_user(expected_username)
+
+        # WHEN - we call the get user (id) from name function
+        actual_result = get_user_from_name(expected_username)
+        # and get the username for that returned id
+        connection = get_db_connection()
+        cur = connection.cursor()
+        cur.execute(f"SELECT name FROM users WHERE auto_id = {actual_result};")
+        actual_username = cur.fetchall()[0][0]
+        cur.close()
+        connection.close()
+
+        # THEN - the result has the correct details
+        self.assertEqual(actual_username, expected_username)
+
+    def test_getting_id_for_invalid_username_returns_none(self):
+        # GIVEN - a username
+        expected_username = 'afakeuserwhodoesnotexist'
+
+        # WHEN - we call the get user (id) from name function
+        actual_result = get_user_from_name(expected_username)
+
+        # THEN - the result is none
+        expected_result = None
+        self.assertEqual(actual_result, expected_result)
 
     ## TEST GET ALL ARTISTS
+    def test_get_all_artists_returns_list_of_artists(self):
+        # GIVEN - the setup has added all artists to the db
+        # WHEN - we call the undertest function
+        all_artists = get_all_artists()
+
+        # THEN - we have a result which is a list of tuples, and each tuple matches expected for artist row
+        expected_result_type = 'list'
+        actual_result_type = type(all_artists).__name__
+
+        expected_element_type = 'tuple'
+        actual_element_type = type(all_artists[0]).__name__
+
+        # note length of result will change as more artists are added from spotify imports, not testing atm
+
+        self.assertEqual(expected_result_type, actual_result_type)
+        self.assertEqual(expected_element_type, actual_element_type)
 
     ## TEST GET ALL ARTIST IDS
+    def test_get_all_artists_and_ids_returns_result_of_same_length(self):
+        pass 
+    
+    def test_get_all_artist_ids_returns_list_of_ints(self):
+        pass
 
     ## TEST RATING ARTIST
 

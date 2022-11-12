@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import get_db_connection, create_token
+from app.functions import get_db_connection, create_token, get_user_from_name
 import random, string, re, secrets
 import os
 from db.db_access import setup_tables
@@ -261,6 +261,8 @@ class TestAuthentication(unittest.TestCase):
         # GIVEN - we have signed in with valid info (mocking token straight into session cookie)
         username = 'test_user'
         test_token = create_token(username)
+
+        self.cleanup_remove_rating(username)
         
         with app.test_client(self) as client:
             with client.session_transaction() as sess:
@@ -284,3 +286,16 @@ class TestAuthentication(unittest.TestCase):
         # THEN - get a message to say you need to sign in (generic from decorator)
         expected_message = 'You need to be signed in to see this page.'
         self.assertTrue(expected_message in actual_response) 
+
+    def cleanup_remove_rating(self, username):
+        user_id = get_user_from_name(username)
+
+        connection = get_db_connection()
+        cur = connection.cursor()
+        cur.execute(f"DELETE FROM user_ratings WHERE user_id = {user_id};")
+        connection.commit()
+        cur.close()
+        connection.close()
+
+if __name__=="__main__":
+    unittest.main()

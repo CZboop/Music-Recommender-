@@ -358,6 +358,55 @@ class TestFunctions(unittest.TestCase):
         self.cleanup_remove_recs(username)
 
     ## TEST IS ARTIST RATED
+    def test_is_artist_rated_returns_none_if_no_user_id(self):
+        # GIVEN - no user id
+        # WHEN - we call the is artist rated func
+        is_rated = is_artist_rated('2pac')
+
+        # THEN - result is None
+        self.assertEqual(is_rated, None)
+
+    def test_is_artist_rated_returns_true_if_already_rated(self):
+        # GIVEN - a user who has rated an artist
+        username = 'test_user_123456'
+        user_id = 4455667
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        user_id = get_user_from_name(username)
+        artist_name = '2pac'
+        artist_id = get_artist_id_from_name(artist_name)
+        rating = 7
+
+        self.cleanup_remove_rating(username)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # WHEN - we call the is artist rated func
+        is_rated = is_artist_rated(artist_name, user_id)
+
+        # THEN - result is true
+        self.assertTrue(is_rated)
+
+    def test_is_artist_rated_returns_false_if_not_rated(self):
+        # GIVEN - a user who has not rated an artist
+        username = 'test_user_123456'
+        user_id = 4455667
+        artist_name = '2pac'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+
+        user_id = get_user_from_name(username)
+
+        # WHEN - we call the is artist rated func
+        is_rated = is_artist_rated(artist_name, user_id)
+
+        # THEN - result is false
+        self.assertFalse(is_rated)
 
     ## TEST GET HIGHEST USER ID
 

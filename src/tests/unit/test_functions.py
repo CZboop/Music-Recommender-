@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist
 import datetime as dt
 import jwt, os
 from db.db_access import setup_tables, add_starter_data_to_db
@@ -431,6 +431,64 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     ## TEST GET ARTIST LINK FROM ID
+    # TODO: make this part of starter data - was added manually after rather than getting from og dataset
+    # def test_can_get_artist_link_from_id(self):
+    #     pass
+
+    ## TEST CAN ADD A NEW ARTIST
+    def test_can_add_a_new_artist(self):
+        # GIVEN - an artist not in the db
+        artist_name = 'test artist 123'
+        # WHEN - we the artist and query the db for it
+        add_new_artist(artist_name)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM artists WHERE name = '{artist_name}';")
+        result_name = cur.fetchall()[0][1]
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # THEN - the db returns the artist
+        self.assertEqual(result_name, artist_name)
+
+        self.cleanup_remove_artist(artist_name)
+
+    def test_adding_new_artist_can_handle_single_quotes_in_name(self):
+        # GIVEN - an artist not in the db, with single quotes in the name
+        artist_name = "test mana'ish za'atar"
+        # WHEN - we the artist and query the db for it
+        add_new_artist(artist_name)
+
+        artist_name_escaped = artist_name.replace("'", "''")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM artists WHERE name = '{artist_name_escaped}';")
+        result_name = cur.fetchall()[0][1]
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # THEN - the db returns the artist
+        self.assertEqual(result_name, artist_name)
+
+        self.cleanup_remove_artist(artist_name_escaped)
+
+    ## TEST CAN STORE TOKEN IN SESSION
+    def test_storing_token_adds_it_to_session(self):
+        pass
+
+    ## TEST CAN GET ALL ARTIST NAMES FROM DB
+
+    ## TEST ADDING SPOTIFY ID TO ARTIST TABLE
+
+    ## TEST STORE RECOMMENDATIONS IN DB
+
+    ## TEST GET ARTIST NAME FROM ID
+
+    ## TEST GET ARTIST LASTFM LINK FROM ID
 
     def cleanup_remove_rating(self, username):
         user_id = get_user_from_name(username)
@@ -438,6 +496,14 @@ class TestFunctions(unittest.TestCase):
         connection = get_db_connection()
         cur = connection.cursor()
         cur.execute(f"DELETE FROM user_ratings WHERE user_id = {user_id};")
+        connection.commit()
+        cur.close()
+        connection.close()
+
+    def cleanup_remove_artist(self, artist_name):
+        connection = get_db_connection()
+        cur = connection.cursor()
+        cur.execute(f"DELETE FROM artists WHERE name = '{artist_name}';")
         connection.commit()
         cur.close()
         connection.close()

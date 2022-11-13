@@ -150,6 +150,7 @@ def get_spotify_recently_played():
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
     res = requests.get(url='https://api.spotify.com/v1/me/player/recently-played', headers= headers)
     # TODO: handle at least two possible errors - empty response and user not added to dev dashboard? (flash messages?)
+    return res
 
 def get_spotify_top():
     # these can be rated higher than the generally followed
@@ -270,6 +271,7 @@ def add_artist_id_to_db(artist_id, artist_name):
 def add_spotify_ids():
     ids = get_all_artist_ids(get_artist_names())
     # add_artist_id_to_db(ids)
+    return ids
 
 def get_spotify_followed_artists():
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}
@@ -288,7 +290,7 @@ def get_spotify_followed_artists():
 
     add_ratings_for_spotify_artists(followed_artists, top= False, rating= 5)
 
-    return True
+    return followed_artists
 
 def get_top_songs_for_artist(artist_id):
     headers = {'Authorization': f'Bearer {session["spotify_access_token"]}', 'Content-Type': 'application/json'}

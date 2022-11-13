@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist, get_artist_names
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist, get_artist_names, store_recommendation, get_artists_name_from_id
 import datetime as dt
 import jwt, os
 from db.db_access import setup_tables, add_starter_data_to_db
@@ -310,7 +310,7 @@ class TestFunctions(unittest.TestCase):
 
     ## TEST GET PAST RECOMMENDATIONS
     def test_can_get_past_recs_for_user_with_past_recs(self):
-        # GIVEN - a user who has past recommendations in the database
+        # GIVEN - a user who has past specific set of recommendations in the database
         username = 'test_user_123456'
         user_id = 4455667
         artist_name = '2pac'
@@ -318,6 +318,7 @@ class TestFunctions(unittest.TestCase):
             self.setup_test_user(username, user_id)
 
         user_id = get_user_from_name(username)
+        self.cleanup_remove_recs(username)
         past_recs_to_add = [100, 200, 300, 400] # artist ids just ints
         conn = get_db_connection()
         cur = conn.cursor()
@@ -347,6 +348,7 @@ class TestFunctions(unittest.TestCase):
             self.setup_test_user(username, user_id)
 
         user_id = get_user_from_name(username)
+        self.cleanup_remove_recs(username)
 
         # WHEN - we call get past recommendations
         actual_past_recs = get_past_recs(user_id)
@@ -511,14 +513,42 @@ class TestFunctions(unittest.TestCase):
 
     ## TEST STORE RECOMMENDATIONS IN DB
     def test_store_recommendations_in_db(self):
-        # GIVEN - 
+        # GIVEN - a user with no recommendations stored
+        username = 'test_user_123456'
+        user_id = 4455667
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        user_id = get_user_from_name(username)
+        self.cleanup_remove_recs(username)
 
-        # WHEN - 
+        # WHEN - we call the function to store for that user with certain artist ids
+        expected_artist_ids = [250, 350, 450]
+        store_recommendation(user_id, expected_artist_ids)
 
-        # THEN - 
-        pass
+        # THEN - querying the recommendations table for that user returns those artists
+        connection = get_db_connection()
+        cur = connection.cursor()
+        cur.execute(f"SELECT artist_id FROM user_recommendations WHERE user_id = {user_id};")
+        result = cur.fetchall()
+        actual_artist_ids = [i[0] for i in result]
+        cur.close()
+        connection.close()
+        
+        self.assertEqual(actual_artist_ids, expected_artist_ids)
+
+        self.cleanup_remove_recs(username)
 
     ## TEST GET ARTIST NAME FROM ID
+    def test_get_artist_name_from_id(self):
+        # GIVEN - an artist where we know both name and id
+        expected_name = '2pac'
+        expected_id = get_artist_id_from_name(expected_name)
+
+        # WHEN - we call the get artist name func
+        actual_name = get_artists_name_from_id(expected_id)
+
+        # THEN - the id matches what we expect
+        self.assertEqual(actual_name, expected_name)
 
     ## TEST GET ARTIST LASTFM LINK FROM ID
 

@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist
+from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist, get_artist_names
 import datetime as dt
 import jwt, os
 from db.db_access import setup_tables, add_starter_data_to_db
@@ -477,14 +477,46 @@ class TestFunctions(unittest.TestCase):
         self.cleanup_remove_artist(artist_name_escaped)
 
     ## TEST CAN STORE TOKEN IN SESSION
-    def test_storing_token_adds_it_to_session(self):
-        pass
+    # has same attribute error that may be due to not making client request
+    # def test_storing_token_adds_it_to_session(self):
+    #     username = 'test_user_1234'
+    #     token = create_token(username)
+    #     with app.test_client(self) as client:
+    #         with client.session_transaction() as session:
+    #             store_token_user_info(token)
+    #             self.assertTrue(session['logged_in'])
 
     ## TEST CAN GET ALL ARTIST NAMES FROM DB
+    def test_can_get_artist_names_from_db(self):
+        # GIVEN - setup has added starter data to db
+        # WHEN - we call the function to get all artist names
+        all_artist_names = get_artist_names()
+        # THEN - flat list of artist names returned
+        self.assertTrue(all(isinstance(artist, str) for artist in all_artist_names))
 
-    ## TEST ADDING SPOTIFY ID TO ARTIST TABLE
+    def test_all_artist_names_returned(self):
+        # GIVEN - setup has added starter data to db
+        # WHEN - we call the function to get all artist names, and also manually query to get all artists
+        actual_artist_names = get_artist_names()
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM artists;")
+        expected_all_artists = cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+        # THEN - length of both result sets is the same
+        self.assertEqual(len(actual_artist_names), len(expected_all_artists))
 
     ## TEST STORE RECOMMENDATIONS IN DB
+    def test_store_recommendations_in_db(self):
+        # GIVEN - 
+
+        # WHEN - 
+
+        # THEN - 
+        pass
 
     ## TEST GET ARTIST NAME FROM ID
 
@@ -528,7 +560,6 @@ class TestFunctions(unittest.TestCase):
 
     def does_user_already_exist(self, username):
         return False if not get_user_from_name(username) else True
-
 
 if __name__=="__main__":
     unittest.main()

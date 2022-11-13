@@ -48,5 +48,16 @@ class TestSpotifyIntegration(unittest.TestCase):
 
     ## TEST REFRESH SPOTIFY TOKEN
 
+    ## TEST ADDING SPOTIFY ID TO ARTIST TABLE
+    def test_adding_spotify_id_to_db(self):
+        # add column if not there for pipeline/ add to initial db
+        # GIVEN - 
+        # ALTER TABLE table_name ADD COLUMN IF NOT EXISTS column_name INTEGER;
+
+        # WHEN - 
+
+        # THEN - 
+        pass
+
 if __name__=="__main__":
     unittest.main()

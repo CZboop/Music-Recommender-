@@ -4,6 +4,7 @@ import datetime as dt
 import psycopg2
 import os
 import jwt
+import requests
 from flask import jsonify, session, render_template
 
 def authenticate(func):
@@ -152,20 +153,21 @@ def get_spotify_recently_played():
     # TODO: handle at least two possible errors - empty response and user not added to dev dashboard? (flash messages?)
     return res
 
-def get_spotify_top():
+def get_spotify_top(access_token):
     # these can be rated higher than the generally followed
     # TODO: refresh token if needed before any request?
-    access_token = session['spotify_access_token']
+    # access_token = session['spotify_access_token']
     headers = {'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'}
     
     res = requests.get(url='https://api.spotify.com/v1/me/top/artists?limit=50', headers= headers)
     # print(f"Top Artists: {[i['name'] for i in res.json()['items']]}")
     print("Got Top Artists")
     top_artists = [i['name'] for i in res.json()['items']]
-    find_artist_in_spotify(top_artists[0])
+    # find_artist_in_spotify(top_artists[0])
     # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
     # or anyway handle trying to add rating info when not logged in
     add_ratings_for_spotify_artists(top_artists)
+    return top_artists
 
 @authenticate
 def add_ratings_for_spotify_artists(artists, top=True, rating=10):

@@ -2,9 +2,10 @@ import unittest
 from app import app
 from app.functions import get_db_connection, create_token, get_user_from_name, get_artist_id_from_name
 import random, string, re
-import os
+import os, pytest
 from db.db_access import setup_tables, add_starter_data_to_db
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestRateArtistFunctionality(unittest.TestCase):
 
     ### TESTING THE ABILITY FOR USER TO RATE ARTISTS

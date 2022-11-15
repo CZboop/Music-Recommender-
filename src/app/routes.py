@@ -163,7 +163,7 @@ def get_spotify_data():
     print('adding data...')
     # TODO:
     # broader func to pull together other spotify related ones
-    get_spotify_top()
+    get_spotify_top(session['spotify_access_token'])
     get_spotify_recently_played()
     get_spotify_followed_artists()
     get_user_spotify_id()

@@ -2,11 +2,12 @@ import unittest
 from app import app
 from app.functions import get_db_connection
 import random, string, re, secrets
-import os
+import os, pytest
 from db.db_access import setup_tables
 from flask import request
 from urllib.parse import urlparse
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestUserFunctionality(unittest.TestCase):
 
     # removing max diff so can see whole diff if test are failing

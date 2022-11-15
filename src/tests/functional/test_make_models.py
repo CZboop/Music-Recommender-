@@ -1,8 +1,9 @@
 import unittest
 from app.models import Recommender, Model
 from db.db_access import setup_tables, add_starter_data_to_db
-import os
+import os, pytest
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestModelMaking(unittest.TestCase):
 
     ### TESTING ML MODEL BASIC FUNCTIONALITY

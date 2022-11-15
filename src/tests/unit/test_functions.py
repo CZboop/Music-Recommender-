@@ -2,9 +2,10 @@ import unittest
 from app import app
 from app.functions import authenticate, get_db_connection, create_token, store_token_user_info, get_username_from_token, get_artists_rated, get_user_from_name, get_all_artists, get_all_artist_ids, rating_artist, get_past_recs, is_artist_rated, get_highest_user_id, get_artist_link_from_id, get_artist_id_from_name, add_new_artist, get_artist_names, store_recommendation, get_artists_name_from_id
 import datetime as dt
-import jwt, os
+import jwt, os, pytest
 from db.db_access import setup_tables, add_starter_data_to_db
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestFunctions(unittest.TestCase):
 
     ### TESTING FUNCTIONS USED WITHIN THE API/APP

@@ -166,10 +166,11 @@ def get_spotify_top(access_token):
     # find_artist_in_spotify(top_artists[0])
     # TODO: all spotify need to be logged in to this web app? just via portal route etc? 
     # or anyway handle trying to add rating info when not logged in
-    add_ratings_for_spotify_artists(top_artists)
+    added = add_ratings_for_spotify_artists(top_artists)
+    print(f"ADDED????? : {added}")
     return top_artists
 
-@authenticate
+# @authenticate
 def add_ratings_for_spotify_artists(artists, top=True, rating=10):
     # TODO: if else for rating depending on top or not
     if 'user' in session:

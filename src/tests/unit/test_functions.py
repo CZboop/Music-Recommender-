@@ -5,7 +5,7 @@ import datetime as dt
 import jwt, os, pytest
 from db.db_access import setup_tables, add_starter_data_to_db
 
-# @pytest.mark.skip(reason="temp skipping for speed on new tests")
+@pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestFunctions(unittest.TestCase):
 
     ### TESTING FUNCTIONS USED WITHIN THE API/APP

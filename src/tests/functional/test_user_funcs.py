@@ -266,6 +266,44 @@ class TestUserFunctionality(unittest.TestCase):
         # THEN - token is not there
         self.assertFalse('user' in actual_session)
 
+    # TEST FLASH MESSAGE NOT ALL FIELDS FILLED IN
+    def test_sign_up_without_all_fields_filled_in_gives_relevant_flash_message(self):
+        # GIVEN - valid data to create a new user but not all data present
+        client = app.test_client(self) 
+        username = 'test_user1'
+        email = f'{username}@email.com'
+
+        # WHEN - we send a post request with this data to the sign up route
+        response = client.post('/sign-up', data=dict(username='', password='P@ssword123', 
+        confirm_password='P@ssword123', email=email), follow_redirects=True)
+        actual_response = response.get_data(as_text = True)
+
+        # THEN - the flash message that not all filled in is in the response
+        expected_message = 'Please ensure all fields are filled in.'
+        self.assertTrue(expected_message in actual_response)
+
+    # TEST FLASH MESSAGE EMAIL ALREADY IN USE
+    def test_sign_up_with_email_already_in_use_gives_flash_message(self):
+        # GIVEN - user details with an email that is already in the user db
+        username = 'test_user1000'
+        id = 100
+        email = 'test@email.com'
+        # will have different username but same email
+        existing_username = 'not_a_test_user'
+        if not self.does_user_already_exist(existing_username):
+            self.setup_test_user(existing_username, id, email=email)
+        client = app.test_client(self)
+
+        # WHEN - we make a post request to the sign up page with this data
+        response = client.post('/sign-up', data=dict(username=username, password='P@ssword123', 
+        confirm_password='P@ssword123', email=email), follow_redirects=True)
+        actual_response = response.get_data(as_text = True)
+
+        # THEN - a flash message appears to say email already in use
+        expected_message = 'Email already in use. Please try again.'
+        # self.assertEqual(expected_message, actual_response)
+        self.assertTrue(expected_message in actual_response)
+
     def cleanup_remove_from_db(self, username):
         connection = get_db_connection()
         cur = connection.cursor()
@@ -283,12 +321,6 @@ class TestUserFunctionality(unittest.TestCase):
 
     def does_user_already_exist(self, username):
         return False if not get_user_from_name(username) else True
-    
-    # TODO:
-    ## TEST SIGN UP PAGE FLASH MESSAGES
-    # NOT ALL FIELDS FILLED IN
-    # EMAIL ALREADY FILLED IN
-    # 
 
 if __name__=="__main__":
     unittest.main()

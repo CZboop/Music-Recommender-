@@ -169,5 +169,8 @@ class TestRateArtistFunctionality(unittest.TestCase):
         cur.close()
         connection.close()
 
+    # TODO: 
+    ## TEST RATING AN ARTIST THROUGH WELCOME ROUTE
+
 if __name__=="__main__":
     unittest.main()

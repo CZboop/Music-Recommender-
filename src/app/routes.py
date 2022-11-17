@@ -109,12 +109,12 @@ def logout():
 @app.route('/update-rated', methods=['POST'])
 @authenticate
 def update_rated():
-    if 'user' in session:
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
-        return jsonify({'num_rated': len(get_artists_rated(user_id))})
-    else:
-        return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+    # if 'user' in session:
+    username = get_username_from_token()
+    user_id = get_user_from_name(username)
+    return jsonify({'num_rated': len(get_artists_rated(user_id))})
+    # else:
+    #     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 # portal to log in via spotify
 @app.route('/portal', methods=['GET', 'POST'])
@@ -170,74 +170,74 @@ def get_spotify_data():
     
     return jsonify({'data': 'placeholder'})
 
-@app.route('/recommend-knn', methods=['POST'])
-@authenticate
-def recommend_knn():
-    # TODO: separate out into reusable chunks across this and other recommend method
-    if 'user' in session:
-        username = get_username_from_token()
-        userid = get_user_from_name(username)
+# @app.route('/recommend-knn', methods=['POST'])
+# @authenticate
+# def recommend_knn():
+#     # TODO: separate out into reusable chunks across this and other recommend method
+#     if 'user' in session:
+#         username = get_username_from_token()
+#         userid = get_user_from_name(username)
 
-        # returning if not rated many artists with just a message to rate more
-        num_rated = len(get_artists_rated(userid))
-        top_rated = get_artists_rated(userid, 8)
+#         # returning if not rated many artists with just a message to rate more
+#         num_rated = len(get_artists_rated(userid))
+#         top_rated = get_artists_rated(userid, 8)
 
-        recommender = KNNRecommender()
+#         recommender = KNNRecommender()
 
-        recs = recommender.recommend_subset(recommender.single_user_subset(userid), 25)
-        recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
-        # print(recs_)
+#         recs = recommender.recommend_subset(recommender.single_user_subset(userid), 25)
+#         recs_ = [str(i[0]) for i in recs.select('recommendations').collect()]
+#         # print(recs_)
 
-        # getting just artist id using many string slices
-        rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
+#         # getting just artist id using many string slices
+#         rec_artist_ids = [int(i.split("=")[1].split(", ")[0]) for i in recs_[0].split("Row(")[1:] ]
 
-        past_recs = get_past_recs(userid)
-        past_rec_names = [get_artists_name_from_id(i[0]) for i in past_recs]
-        past_rec_ids = [i[0] for i in past_recs]
+#         past_recs = get_past_recs(userid)
+#         past_rec_names = [get_artists_name_from_id(i[0]) for i in past_recs]
+#         past_rec_ids = [i[0] for i in past_recs]
 
-        # filtering out artists that have already been recommended before adding to db
-        new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
-        new_artist_links = [get_artist_link_from_id(i) for i in new_artist_ids]
+#         # filtering out artists that have already been recommended before adding to db
+#         new_artist_ids = [i for i in rec_artist_ids if i not in past_rec_ids]
+#         new_artist_links = [get_artist_link_from_id(i) for i in new_artist_ids]
 
-        past_rec_links = [get_artist_link_from_id(i) for i in past_rec_ids]
+#         past_rec_links = [get_artist_link_from_id(i) for i in past_rec_ids]
 
-        store_recommendation(userid , new_artist_ids)
+#         store_recommendation(userid , new_artist_ids)
 
-        rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
+#         rec_names = [get_artists_name_from_id(i) for i in new_artist_ids]
 
-        rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
-        print(rec_name_links)
-        past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
+#         rec_name_links = {rec_names[i]: new_artist_links[i] for i in range(len(rec_names))}
+#         print(rec_name_links)
+#         past_rec_links = {past_rec_names[i]: past_rec_links[i] for i in range(len(past_rec_links))}
 
-        top_songs = {}
-        if 'spotify_user_id' not in session:
-            pass
-            # TODO: add client credentials auth flow to get spotify info without user login (for top songs etc.)
-        if 'spotify_user_id' in session:
-            top_songs = {}
-            for artist_name in rec_names:
-                # TODO: maybe adjust/test properly to made sure not other errors than just artist not found/ better handle within func
-                try:
-                    spotify_id = find_artist_in_spotify(artist_name)
-                    top_songs_for_artist = get_top_songs_for_artist(spotify_id)
-                    print(top_songs_for_artist)
-                    top_songs[artist_name] = top_songs_for_artist
-                    # TODO: make this json friendly
-                except:
-                    print(f'{artist_name} not found')
-                    # top_songs.append([])
-            # top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
-            # print(f'TOP SONGS DICT : {top_songs_dict}')
-            print(rec_names)
-            top_songs_list = list(chain.from_iterable(i for i in top_songs.values() if len(i) > 0))
-            print(f'TOP SONGS LIST::::::{top_songs_list}')
-            print(f'TOP SONGS LENGTH::::::{len(top_songs_list)}')
-            save_recs_as_spotify_playlist(rec_names, top_songs_list[:100])
-        # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
+#         top_songs = {}
+#         if 'spotify_user_id' not in session:
+#             pass
+#             # TODO: add client credentials auth flow to get spotify info without user login (for top songs etc.)
+#         if 'spotify_user_id' in session:
+#             top_songs = {}
+#             for artist_name in rec_names:
+#                 # TODO: maybe adjust/test properly to made sure not other errors than just artist not found/ better handle within func
+#                 try:
+#                     spotify_id = find_artist_in_spotify(artist_name)
+#                     top_songs_for_artist = get_top_songs_for_artist(spotify_id)
+#                     print(top_songs_for_artist)
+#                     top_songs[artist_name] = top_songs_for_artist
+#                     # TODO: make this json friendly
+#                 except:
+#                     print(f'{artist_name} not found')
+#                     # top_songs.append([])
+#             # top_songs_dict = {rec_names[i]: top_songs[i] for i in range(len(rec_names))}
+#             # print(f'TOP SONGS DICT : {top_songs_dict}')
+#             print(rec_names)
+#             top_songs_list = list(chain.from_iterable(i for i in top_songs.values() if len(i) > 0))
+#             print(f'TOP SONGS LIST::::::{top_songs_list}')
+#             print(f'TOP SONGS LENGTH::::::{len(top_songs_list)}')
+#             save_recs_as_spotify_playlist(rec_names, top_songs_list[:100])
+#         # print(get_top_songs_for_artist(find_artist_in_spotify(past_rec_names[0])))
         
-        return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})
+#         return jsonify({'recs': rec_name_links, 'past_recs': past_rec_links, 'top_songs': top_songs})
 
-    return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+#     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
 @app.route('/recommend', methods=['POST'])
 @authenticate
@@ -332,48 +332,48 @@ def success():
 @app.route('/welcome', methods=('GET', 'POST'))
 @authenticate
 def welcome():
-    logged_in = False
-    if 'user' in session:
-        logged_in = True
-        username = get_username_from_token()
-        user_id = get_user_from_name(username)
-        if request.method == 'POST':
-            artist_name = request.form['artist']
-            artist_id = get_artist_id_from_name(artist_name)
-            rating = request.form['rating']
+    # logged_in = False
+    # if 'user' in session:
+    logged_in = True
+    username = get_username_from_token()
+    user_id = get_user_from_name(username)
+    if request.method == 'POST':
+        artist_name = request.form['artist']
+        artist_id = get_artist_id_from_name(artist_name)
+        rating = request.form['rating']
 
-            # if not is_token_valid():
-            #     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
+        # if not is_token_valid():
+        #     return render_template('token_expired.html'), {"Refresh": "7; url=http://127.0.0.1:5000/log-out"}
 
-            updated = False
-            if is_artist_rated(artist_name, user_id) == True:
-                # updating if user has already rated artist before
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
-                conn.commit()
-                cur.close()
-                conn.close()
-                updated = True
+        updated = False
+        if is_artist_rated(artist_name, user_id) == True:
+            # updating if user has already rated artist before
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(f"UPDATE user_ratings SET user_id = {user_id},  artist_id = {artist_id}, rating = {rating} WHERE user_id = {user_id} and artist_id = {artist_id};")
+            conn.commit()
+            cur.close()
+            conn.close()
+            updated = True
 
-            else:
-                # else adding in new rating row
-                conn = get_db_connection()
-                cur = conn.cursor()
-                cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
-                conn.commit()
-                cur.close()
-                conn.close()
-            
-            # return jsonify({'numRated' : len(get_artists_rated(user_id))})
+        else:
+            # else adding in new rating row
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(f"INSERT INTO user_ratings (user_id, artist_id, rating) VALUES ({user_id}, {artist_id}, {rating});")
+            conn.commit()
+            cur.close()
+            conn.close()
+        
+        # return jsonify({'numRated' : len(get_artists_rated(user_id))})
 
-        artists = get_all_artists()
+    artists = get_all_artists()
 
-        num_rated = len(get_artists_rated(user_id))
+    num_rated = len(get_artists_rated(user_id))
 
-        return render_template('welcome.html', username = request.args.get('username'), artists = artists, num_rated = num_rated)
+    return render_template('welcome.html', username = request.args.get('username'), artists = artists, num_rated = num_rated)
     
-    return redirect(url_for('home'))
+    # return redirect(url_for('home'))
 
 
 @app.route('/sign-up', methods=('GET', 'POST'))

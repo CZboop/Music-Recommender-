@@ -1,9 +1,10 @@
-import unittest
+import unittest, pytest
 from app.validator import PasswordValidator, EmailValidator, UsernameValidator
 from app.functions import get_db_connection
 from db.db_access import setup_tables
 import os, random, string
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestValidators(unittest.TestCase):
 
     ### ONE-TIME SETUP FOR DB CONNECTION

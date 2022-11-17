@@ -1,6 +1,6 @@
 import unittest
 from app import app
-from app.functions import get_db_connection
+from app.functions import get_db_connection, get_user_from_name, create_token
 import random, string, re, secrets
 import os, pytest
 from db.db_access import setup_tables
@@ -116,29 +116,28 @@ class TestUserFunctionality(unittest.TestCase):
         response_data = undertest_response.get_data(as_text = True)
         self.assertTrue(flash_message in response_data)
 
-    # TODO: fix or test with selenium
-    # def test_can_sign_in_with_all_valid_info(self):
-    #     # GIVEN - user info added to db in previous test
-    #     client = app.test_client(self) 
-    #     username = 'test_user1'
-    #     password = 'P@ssword123'
+    # TEST CAN SIGN IN WITH VALID INFO
+    def test_can_sign_in_with_all_valid_info(self):
+        # GIVEN - user info added to db in previous test
+        client = app.test_client(self) 
+        username = 'test_user_123456'
+        user_id = 4455667
+        password = 'P@ssword123'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
         
-    #     # WHEN - we sign in with all correct info
-    #     with client:
-            
-    #         response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
-    #         with client.session_transaction() as sess:
-    #             sess.modified = True
-    #         response_url = str(urlparse(response.location).path, encoding='utf-8')
-    #         response_text = response.get_data(as_text = True)
-    #         welcome_message = f'Welcome, {username}!'
-    #         # with app.test_client(self) as client:
-            
+        # WHEN - we sign in with all correct info
+        with client:            
+            response = client.post('/login', data=dict(username=username, password=password), follow_redirects=True)
+            with client.session_transaction() as sess:
+                sess.modified = True
+            response_url = str(urlparse(response.location).path, encoding='utf-8')
+            response_text = response.get_data(as_text = True)
+            welcome_message = f'Welcome, {username}!'            
 
-    #     # THEN - sign in and redirect to a welcome page containing the username :)
-    #         self.assertEqual(response_url, '')
-    #         self.assertEqual(welcome_message, response_text)
-    #         self.assertTrue(welcome_message in response_text)
+        # THEN - sign in and redirect to a home page containing the username :)
+            self.assertEqual(response_url, '')
+            self.assertTrue(welcome_message in response_text)
 
     def test_cannot_sign_in_with_all_invalid_info(self):
         # GIVEN - user info not in the db
@@ -232,31 +231,25 @@ class TestUserFunctionality(unittest.TestCase):
         expected_message = 'You can\'t log out if you\'re not logged in.'
         self.assertTrue(expected_message in actual_response)
 
-    # TODO: fix or test with selenium
-    # def test_login_adds_token_to_session(self):
-    #     # GIVEN - we sign in with valid info
-    #     secret = secrets.token_urlsafe(32)
-    #     test_app = app
-    #     test_app.config['SECRET_KEY'] = secret
-    #     # test_app.config.update(SESSION_COOKIE_DOMAIN = None)
-    #     # test_app.config['SERVER_NAME'] = 'localhost'
+    def test_login_adds_token_to_session(self):
+        # GIVEN - we sign in with valid info       
+        client = app.test_client(self) 
+        username = 'test_user_123456'
+        user_id = 4455667
+        password = 'P@ssword123'
+        if not self.does_user_already_exist(username):
+            self.setup_test_user(username, user_id)
+        
+        # WHEN - we check the session cookie
+        with client as c:
+            c.post('/login', data=dict(username=username, password=password))
+            with c.session_transaction() as sess:
+                actual_token = sess['user']
+            print(actual_token)
 
-    #     # client = app.test_client(self) 
-    #     username = 'user1'
-    #     password = 'P@ssword123'
-    #     # response = c.post('/login', data=dict(username=username, password=password), follow_redirects=True)
-        
-        
-    #     # WHEN - we check the session cookie
-    #     with test_app as c:
-    #         c.post('/login', data=dict(username=username, password=password))
-            
-    #         with c.session_transaction() as sess:
-                
-    #             actual_session = c.session['user']
-    #         print(actual_session)
-    #     # THEN - token is there
-    #     self.assertEqual('user', actual_session)
+        # THEN - jwt token is there
+        expected_token = create_token(username)
+        self.assertEqual(expected_token, actual_token)
 
     def test_log_out_removes_token_from_session(self):
         # GIVEN - we sign in with valid info
@@ -279,8 +272,23 @@ class TestUserFunctionality(unittest.TestCase):
         cur.execute(f"DELETE FROM users WHERE name = '{username}';")
         cur.close()
         connection.close()
+
+    def setup_test_user(self, username, user_id, email='test_dummy_email@email.com', password='P@ssword123'):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(f"INSERT INTO users (name, id, email, password) VALUES ('{username}', {user_id}, '{email}', crypt('{password}', gen_salt('bf', 8)));")
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    def does_user_already_exist(self, username):
+        return False if not get_user_from_name(username) else True
     
-    #TODO: remove all new user info from db once tests all run
+    # TODO:
+    ## TEST SIGN UP PAGE FLASH MESSAGES
+    # NOT ALL FIELDS FILLED IN
+    # EMAIL ALREADY FILLED IN
+    # 
 
 if __name__=="__main__":
     unittest.main()

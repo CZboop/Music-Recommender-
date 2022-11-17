@@ -19,6 +19,7 @@ def mock_get_spotify_top_get_request(*args, **kwargs):
     mock_response = MockResponse({'items': [{'name': 'fake artist', 'other': 'n/a'}, {'name': 'unreal artist', 'other': 'none'}, {'name': 'real artist sike'}], 'irrelevant key': 333})
     return mock_response
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestSpotifyIntegration(unittest.TestCase):
 
     ### TESTING FUNCTIONS THAT USE EXTERNAL SPOTIFY API
@@ -206,6 +207,15 @@ class TestSpotifyIntegration(unittest.TestCase):
 
         # THEN - 
         pass
+
+    ## TEST PORTAL ROUTE
+
+    ## TEST LOGGING IN ROUTE
+
+    ## TEST GET SPOTIFY DATA ROUTE
+    # ultimately returns placeholder data jsonified {'data': 'placeholder'}
+
+    ## 
 
 if __name__=="__main__":
     unittest.main()

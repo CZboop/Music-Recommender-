@@ -1,6 +1,7 @@
-import unittest
+import unittest, pytest
 from app import app
 
+# @pytest.mark.skip(reason="temp skipping for speed on new tests")
 class TestRouteStatuses(unittest.TestCase):
 
     ### TESTING THE STATUS CODES FOR EACH ENDPOINT ###

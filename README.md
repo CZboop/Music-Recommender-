@@ -7,6 +7,7 @@ Full stack music recommendation app, allowing users to rate musical artists and 
 
 - Python Flask app base
 - Spark's Python API PySpark used to create an ALS Model
+- Model hyperparameters are optimised and the training and tuning is checkpointed
 - PSQL database connected to the app using the psycopg2 database adapter
 - JWT authentication, storing the token in the Session cookie
 - jQuery Ajax used for asynchronous background tasks, and updating pages without refresh

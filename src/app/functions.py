@@ -7,6 +7,9 @@ import jwt
 import requests
 from flask import jsonify, session, render_template
 
+APP_SECRET = os.environ['APP_SECRET']
+APP_ID = os.environ['APP_ID']
+
 def authenticate(func):
     @wraps(func)
     def decorator(*args, **kwargs):

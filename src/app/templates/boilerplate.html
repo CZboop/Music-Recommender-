@@ -13,7 +13,13 @@
     <nav class="navbar" id="navbar">
         <h1>RECOMMENDER</h1>
         <a href="{{ url_for('home') }}">Home</a>
+        <div>
         <a href="{{ url_for('rate_artist') }}">Rate Artists</a>
+        <ul>
+          <li><a href = "{{ url_for('portal') }}">Import Spotify</a></li>
+          <li>Rate Artists</li>
+        </ul>
+        </div>
         <a href="{{ url_for('recommendations') }}">Recommendations</a>
         <a href="{{ url_for('logout') if 'user' in session else url_for('login')}}">{{"Log Out" if 'user' in session else "Log In/Sign Up"}}</a>
         <button class="burger" id="burger-toggle">

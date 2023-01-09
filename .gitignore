@@ -4,3 +4,5 @@ src/app/config_secrets.py
 src/tests/__pycache__
 src/tests/unit/__pycache__
 src/tests/functional/__pycache__
+notes.txt
+src/env_secrets.bat
